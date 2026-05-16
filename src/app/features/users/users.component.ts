@@ -2,7 +2,8 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angula
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/auth.service';
+import { MenuCodes } from '../../core/constants/menu-codes';
+import { PermissionService } from '../../core/services/permission.service';
 import { SchoolContextService } from '../../core/services/school-context.service';
 import { UserService } from '../../core/services/user.service';
 import { DynamicTableComponent } from '../../common/dynamic-table/components/dynamic-table';
@@ -26,7 +27,7 @@ import type { DataTableAction, DataTableConfig } from '../../common/dynamic-tabl
 export class UsersComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly schoolContext = inject(SchoolContextService);
-  private readonly auth = inject(AuthService);
+  private readonly permissionService = inject(PermissionService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -82,7 +83,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
-    if (!this.auth.hasPermission('hr.manage')) {
+    if (!this.permissionService.canAdd(MenuCodes.Users)) {
       this.tableConfig = {
         ...this.tableConfig,
         header: {

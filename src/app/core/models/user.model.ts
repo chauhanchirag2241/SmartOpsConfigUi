@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'teacher' | 'student' | 'parent' | 'SchoolAdmin' | 'PlatformAdmin' | 'Accountant';
+export type UserRole = 'admin' | 'teacher' | 'student' | 'parent' | 'Admin' | 'Accountant';
 
 export interface User {
   id: string;
@@ -6,6 +6,7 @@ export interface User {
   email: string;
   role: UserRole;
   roles?: string[];
-  permissions?: string[];
+  roleId?: string;
+  roleCode?: string;
   token?: string;
 }

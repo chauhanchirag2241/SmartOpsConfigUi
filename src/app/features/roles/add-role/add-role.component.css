@@ -1,3 +1,47 @@
+.add-role-page .form-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.add-role-page .form-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.add-role-page .form-header p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.add-role-page .back {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.add-role-page .hint-text {
+  color: var(--muted);
+  margin: 0;
+  padding: 12px;
+}
+
+.add-role-page .permission-panel.full-width {
+  width: 100%;
+}
+
+.add-role-page .form-actions {
+  margin-top: 16px;
+}
+
 :host {
   --g50: #eaf3de;
   --g100: #c0dd97;
@@ -615,4 +659,44 @@ code {
     justify-content: center;
     margin-left: 0;
   }
+}
+
+.menu-permission-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.menu-permission-header,
+.menu-permission-row {
+  display: grid;
+  grid-template-columns: 2fr repeat(5, minmax(3rem, 1fr));
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-permission-header {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  padding-bottom: 0.5rem;
+}
+
+.menu-permission-row {
+  padding: 0.35rem 0;
+}
+
+.menu-permission-row label {
+  display: flex;
+  justify-content: center;
+}
+
+.link-btn {
+  margin-left: 0.75rem;
+  background: none;
+  border: none;
+  color: var(--primary, #2563eb);
+  cursor: pointer;
+  font-size: 0.85rem;
 }

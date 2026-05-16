@@ -1,19 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import type { IRoleMenuPermission } from '../models/permission.model';
 import type { SchoolUserDto } from './user.service';
 
 export interface RoleDto {
   id: string;
   name: string;
+  code: string;
   description?: string;
-  permissions: string[];
-}
-
-export interface PermissionDto {
-  id: string;
-  name: string;
-  description?: string;
+  menuPermissions: IRoleMenuPermission[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,16 +20,32 @@ export class RoleService {
     return this.api.get<RoleDto[]>('roles');
   }
 
+  createRole(payload: {
+    name: string;
+    code: string;
+    description?: string;
+    menuPermissions: IRoleMenuPermission[];
+  }): Observable<RoleDto> {
+    return this.api.post<RoleDto>('roles', payload);
+  }
+
+  updateRole(
+    id: string,
+    payload: { name: string; code: string; description?: string; isActive: boolean },
+  ): Observable<void> {
+    return this.api.put<void>(`roles/${id}`, payload);
+  }
+
   getRole(id: string): Observable<RoleDto> {
     return this.api.get<RoleDto>(`roles/${id}`);
   }
 
-  getPermissions(): Observable<PermissionDto[]> {
-    return this.api.get<PermissionDto[]>('permissions');
+  getMenuTemplates(): Observable<IRoleMenuPermission[]> {
+    return this.api.get<IRoleMenuPermission[]>('menus/all');
   }
 
-  updateRolePermissions(roleId: string, permissionNames: string[]): Observable<void> {
-    return this.api.put<void>(`roles/${roleId}/permissions`, { permissionNames });
+  updateRolePermissions(roleId: string, permissions: IRoleMenuPermission[]): Observable<void> {
+    return this.api.put<void>(`roles/${roleId}/permissions`, { permissions });
   }
 
   getUsersInRole(roleId: string): Observable<SchoolUserDto[]> {

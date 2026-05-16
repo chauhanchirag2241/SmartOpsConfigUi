@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
+import { MenuCodes } from './core/constants/menu-codes';
 import { AdminLayoutComponent } from './layout/admin-layout/admin-layout.component';
 import { AuthLayoutComponent } from './layout/auth-layout/auth-layout.component';
 
@@ -19,25 +20,23 @@ export const routes: Routes = [
       {
         path: 'configuration/schools',
         canActivate: [permissionGuard],
-        data: { permission: 'admin.full' },
+        data: { menuCode: MenuCodes.Schools, permission: 'view' },
         loadComponent: () =>
           import('./features/schools/schools.component').then((m) => m.SchoolsComponent),
       },
       {
         path: 'configuration/users',
         canActivate: [permissionGuard],
-        data: { permission: 'hr.read' },
+        data: { menuCode: MenuCodes.Users, permission: 'view' },
         loadComponent: () =>
           import('./features/users/users.component').then((m) => m.UsersComponent),
       },
       {
         path: 'configuration/roles',
         canActivate: [permissionGuard],
-        data: { permission: 'roles.manage' },
+        data: { menuCode: MenuCodes.Roles, permission: 'view' },
         loadComponent: () =>
-          import('./features/role-management/role-management.component').then(
-            (m) => m.RoleManagementComponent,
-          ),
+          import('./features/roles/roles.component').then((m) => m.RolesComponent),
       },
     ],
   },

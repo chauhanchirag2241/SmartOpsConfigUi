@@ -11,12 +11,13 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
-import { AuthService } from '../../../core/services/auth.service';
+import { MenuCodes } from '../../../core/constants/menu-codes';
+import { PermissionService } from '../../../core/services/permission.service';
 import { SchoolContextService } from '../../../core/services/school-context.service';
 import { RoleDto, RoleService } from '../../../core/services/role.service';
 import { UserService } from '../../../core/services/user.service';
 
-const FALLBACK_ROLES = ['SchoolAdmin', 'Teacher', 'Accountant', 'Student', 'Parent'];
+const FALLBACK_ROLES = ['Admin'];
 
 @Component({
   selector: 'app-add-user',
@@ -34,7 +35,7 @@ export class AddUserComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
   private readonly roleService = inject(RoleService);
-  private readonly auth = inject(AuthService);
+  private readonly permissionService = inject(PermissionService);
   private readonly schoolContext = inject(SchoolContextService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -48,7 +49,7 @@ export class AddUserComponent implements OnInit {
   rolesLoadError = '';
 
   get canEdit(): boolean {
-    return this.mode !== 'view' && this.auth.hasPermission('hr.manage');
+    return this.mode !== 'view' && this.permissionService.canEdit(MenuCodes.Users);
   }
 
   get schoolReady(): boolean {
@@ -100,7 +101,8 @@ export class AddUserComponent implements OnInit {
           this.roles = FALLBACK_ROLES.map((name, i) => ({
             id: `fallback-${i}`,
             name,
-            permissions: [],
+            code: name.toUpperCase(),
+            menuPermissions: [],
           }));
         },
       });

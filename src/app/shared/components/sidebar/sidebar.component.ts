@@ -3,7 +3,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../core/services/auth.service';
-import { NAV_ITEMS, NavItemConfig } from '../../../core/config/nav.config';
+import { PermissionService } from '../../../core/services/permission.service';
+import { IMenu } from '../../../core/models/menu.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,13 +17,14 @@ export class SidebarComponent {
   @Output() toggle = new EventEmitter<void>();
 
   private readonly auth = inject(AuthService);
+  private readonly permissionService = inject(PermissionService);
 
   private readonly user = toSignal(this.auth.currentUser$, { initialValue: this.auth.currentUser });
-
-  readonly visibleNavItems = computed(() => {
-    const _ = this.user();
-    return NAV_ITEMS.filter((item) => this.auth.hasPermission(item.permission));
+  private readonly menus = toSignal(this.permissionService.menus$, {
+    initialValue: this.permissionService.menus,
   });
+
+  readonly visibleNavItems = computed(() => this.menus() ?? []);
 
   readonly displayRole = computed(() => {
     const roles = this.user()?.roles ?? [];
@@ -44,7 +46,11 @@ export class SidebarComponent {
     this.toggle.emit();
   }
 
-  trackNavItem(index: number, item: NavItemConfig): string {
-    return `${item.route}-${index}`;
+  trackMenu(index: number, item: IMenu): string {
+    return `${item.code}-${index}`;
+  }
+
+  hasChildren(item: IMenu): boolean {
+    return (item.children?.length ?? 0) > 0;
   }
 }
