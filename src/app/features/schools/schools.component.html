@@ -1,0 +1,25 @@
+<section class="schools-page">
+  @if (!showAddForm) {
+    <app-dynamic-table
+      [config]="tableConfig"
+      [data]="schools"
+      [serverSide]="true"
+      [totalRecords]="totalSchools"
+      [rowClassFn]="schoolRowClass"
+      [initialFilterValue]="currentFilter.toString()"
+      (pageChange)="onPageChange($event)"
+      (filterChanged)="onFilterChanged($event)"
+      (actionClicked)="onActionClicked($event)"
+      (exportClicked)="onExportClicked()"
+      (bulkActionClicked)="onBulkActionClicked($event)"
+      (addButtonClicked)="onAddButtonClicked()"
+    />
+  } @else {
+    <app-add-school
+      [mode]="formMode"
+      [schoolId]="selectedSchoolId"
+      (cancel)="closeAddForm()"
+      (saved)="onSchoolSaved()"
+    />
+  }
+</section>

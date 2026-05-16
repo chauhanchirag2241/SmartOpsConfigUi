@@ -18,13 +18,23 @@ export class FileUploadComponent {
   @Input() label = 'Upload photo';
   @Input() subLabel = 'JPG, PNG - max 2MB';
   @Input() accept = 'image/*';
-  @Input() mode: 'avatar' | 'document' = 'avatar';
+  @Input() mode: 'avatar' | 'document' | 'logo' | 'favicon' = 'avatar';
   @Input() disabled = false;
 
   @Output() fileSelected = new EventEmitter<SelectedUploadFile>();
 
   previewUrl: string | null = null;
   fileName = '';
+
+  get iconName(): string {
+    if (this.mode === 'document') {
+      return 'upload_file';
+    }
+    if (this.mode === 'favicon') {
+      return 'crop_square';
+    }
+    return 'cloud_upload';
+  }
 
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;

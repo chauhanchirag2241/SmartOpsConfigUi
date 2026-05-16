@@ -17,9 +17,9 @@ export const routes: Routes = [
       },
       {
         path: 'configuration/schools',
-        loadChildren: () =>
-          import('./features/configuration/school/routes/school.routes').then((m) => m.SCHOOL_ROUTES),
-      }
+        loadComponent: () =>
+          import('./features/schools/schools.component').then((m) => m.SchoolsComponent),
+      },
     ],
   },
   {

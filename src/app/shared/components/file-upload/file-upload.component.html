@@ -1,14 +1,25 @@
-<label class="upload-box" [class.document]="mode === 'document'" [class.disabled]="disabled">
+<label
+  class="upload-box"
+  [class.document]="mode === 'document'"
+  [class.logo]="mode === 'logo'"
+  [class.favicon]="mode === 'favicon'"
+  [class.disabled]="disabled"
+>
   <input type="file" [accept]="accept" [disabled]="disabled" (change)="onFileChange($event)" />
 
-  @if (previewUrl && mode === 'avatar') {
-    <img [src]="previewUrl" alt="Selected file preview" />
+  @if (previewUrl && (mode === 'avatar' || mode === 'logo' || mode === 'favicon')) {
+    <img [src]="previewUrl" [alt]="label" class="preview-img" />
   } @else {
-    <mat-icon>{{ mode === 'document' ? 'upload_file' : 'add_a_photo' }}</mat-icon>
+    <span class="upload-icon-wrap" aria-hidden="true">
+      <mat-icon fontSet="material-symbols-outlined">{{ iconName }}</mat-icon>
+    </span>
+    <span class="upload-label">{{ label }}</span>
+    @if (mode === 'logo' || mode === 'favicon') {
+      <span class="upload-hint">Click to upload</span>
+    }
   }
 
-  <span>{{ fileName || label }}</span>
   @if (mode === 'document' && fileName) {
-    <small>{{ subLabel }}</small>
+    <small class="doc-sub">{{ subLabel }}</small>
   }
 </label>
