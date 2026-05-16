@@ -1,15 +1,9 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, inject, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-
-interface NavItem {
-  label: string;
-  icon: string;
-  route: string;
-  section?: string;
-  badge?: string;
-  danger?: boolean;
-}
+import { AuthService } from '../../../core/services/auth.service';
+import { NAV_ITEMS, NavItemConfig } from '../../../core/config/nav.config';
 
 @Component({
   selector: 'app-sidebar',
@@ -21,19 +15,36 @@ interface NavItem {
 export class SidebarComponent {
   @Output() toggle = new EventEmitter<void>();
 
+  private readonly auth = inject(AuthService);
+
+  private readonly user = toSignal(this.auth.currentUser$, { initialValue: this.auth.currentUser });
+
+  readonly visibleNavItems = computed(() => {
+    const _ = this.user();
+    return NAV_ITEMS.filter((item) => this.auth.hasPermission(item.permission));
+  });
+
+  readonly displayRole = computed(() => {
+    const roles = this.user()?.roles ?? [];
+    return roles[0] ?? this.user()?.role ?? 'User';
+  });
+
+  readonly displayName = computed(() => this.user()?.name ?? 'User');
+
+  readonly initials = computed(() => {
+    const name = this.displayName();
+    const parts = name.split(' ').filter(Boolean);
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  });
+
   onToggle(): void {
     this.toggle.emit();
   }
 
-  trackNavItem(index: number, item: NavItem): string {
+  trackNavItem(index: number, item: NavItemConfig): string {
     return `${item.route}-${index}`;
   }
-
-  readonly navItems: NavItem[] = [
-    { section: 'Overview', label: 'Dashboard', icon: 'grid_view', route: '/dashboard' },
-    { section: 'Configuration Management', label: 'Schools', icon: 'school', route: '/configuration/schools' },
-    { label: 'Configuration', icon: 'settings_applications', route: '/configuration' },
-    { label: 'Masters', icon: 'category', route: '/masters' },
-    { section: 'System', label: 'Settings', icon: 'settings', route: '/settings' },
-  ];
 }

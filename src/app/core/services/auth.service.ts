@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, catchError, map, switchMap, throwError } from 'rxjs';
-import { User } from '../models/user.model';
+import { User, UserRole } from '../models/user.model';
 import { LoginResponse, UserProfile } from '../models/login-response.model';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
@@ -38,13 +38,7 @@ export class AuthService {
         return this.api.get<UserProfile>('auth/me').pipe(map((profile) => ({ tokens, profile })));
       }),
       map(({ tokens, profile }) => {
-        const roles = profile.roles ?? [];
-        const user: User = {
-          id: profile.id,
-          name: profile.username || profile.email,
-          email: profile.email,
-          role: roles.includes('PlatformAdmin') ? 'admin' : 'admin',
-        };
+        const user = this.mapProfileToUser(profile);
         this.login(user, tokens.accessToken);
       }),
       catchError((err) => throwError(() => err)),
@@ -65,5 +59,55 @@ export class AuthService {
 
   getToken(): string | null {
     return this.storage.get<string>(this.tokenKey);
+  }
+
+  hasPermission(permission?: string): boolean {
+    if (!permission) {
+      return true;
+    }
+    const roles = this.currentUser?.roles ?? [];
+    if (roles.includes('SchoolAdmin') || roles.includes('PlatformAdmin')) {
+      return true;
+    }
+    const permissions = this.currentUser?.permissions ?? [];
+    if (permissions.includes('admin.full')) {
+      return true;
+    }
+    return permissions.includes(permission);
+  }
+
+  hasAnyPermission(...permissions: string[]): boolean {
+    return permissions.some((p) => this.hasPermission(p));
+  }
+
+  hasRole(role: string): boolean {
+    const roles = this.currentUser?.roles ?? [];
+    return roles.includes(role) || this.currentUser?.role === role;
+  }
+
+  private mapProfileToUser(profile: UserProfile): User {
+    const roles = profile.roles ?? [];
+    const permissions = profile.permissions ?? [];
+    const primaryRole = roles[0] ?? 'PlatformAdmin';
+    return {
+      id: profile.id,
+      name: profile.username || profile.email,
+      email: profile.email,
+      role: this.mapRole(primaryRole),
+      roles,
+      permissions,
+    };
+  }
+
+  private mapRole(role?: string): UserRole {
+    const normalized = role ?? '';
+    const known: UserRole[] = ['teacher', 'student', 'parent', 'admin', 'SchoolAdmin', 'PlatformAdmin', 'Accountant'];
+    if (known.includes(normalized as UserRole)) {
+      return normalized as UserRole;
+    }
+    if (normalized === 'SchoolAdmin' || normalized === 'PlatformAdmin') {
+      return normalized as UserRole;
+    }
+    return 'admin';
   }
 }

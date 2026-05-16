@@ -1,0 +1,24 @@
+<section class="users-page">
+  <app-school-selector />
+
+  @if (!schoolReady && !showAddForm) {
+    <p class="hint">Select a school to view and manage users.</p>
+  }
+
+  @if (!showAddForm) {
+    <app-dynamic-table
+      [config]="tableConfig"
+      [data]="users"
+      [serverSide]="false"
+      (actionClicked)="onActionClicked($event)"
+      (addButtonClicked)="onAddButtonClicked()"
+    />
+  } @else {
+    <app-add-user
+      [mode]="formMode"
+      [userId]="selectedUserId"
+      (cancel)="closeAddForm()"
+      (saved)="onUserSaved()"
+    />
+  }
+</section>

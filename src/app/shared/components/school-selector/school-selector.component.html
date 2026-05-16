@@ -1,0 +1,15 @@
+<div class="school-selector">
+  <mat-icon>school</mat-icon>
+  <label for="school-select">School</label>
+  <select
+    id="school-select"
+    [(ngModel)]="selectedId"
+    (ngModelChange)="onSchoolChange()"
+    [disabled]="loading"
+  >
+    <option value="">Select a school…</option>
+    @for (school of schools; track school.id) {
+      <option [value]="school.id">{{ school.name }} ({{ school.subdomain }})</option>
+    }
+  </select>
+</div>

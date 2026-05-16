@@ -6,13 +6,14 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
+import { tenantInterceptor } from './core/interceptors/tenant.interceptor';
 import { DD_MM_YYYY_DATE_FORMATS, DdMmYyyyDateAdapter } from './shared/date/dd-mm-yyyy-date-adapter';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideAnimations(),
-    provideHttpClient(withInterceptors([authTokenInterceptor])),
+    provideHttpClient(withInterceptors([authTokenInterceptor, tenantInterceptor])),
     provideRouter(routes),
     { provide: DateAdapter, useClass: DdMmYyyyDateAdapter },
     { provide: MAT_DATE_FORMATS, useValue: DD_MM_YYYY_DATE_FORMATS },

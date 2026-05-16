@@ -1,0 +1,169 @@
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
+import { SchoolContextService } from '../../core/services/school-context.service';
+import { UserService } from '../../core/services/user.service';
+import { DynamicTableComponent } from '../../common/dynamic-table/components/dynamic-table';
+import { SchoolSelectorComponent } from '../../shared/components/school-selector/school-selector.component';
+import { AddUserComponent } from './add-user/add-user.component';
+import type { DataTableAction, DataTableConfig } from '../../common/dynamic-table/components/dynamic-table';
+
+@Component({
+  selector: 'app-users',
+  standalone: true,
+  imports: [
+    DynamicTableComponent,
+    MatIconModule,
+    MatSnackBarModule,
+    SchoolSelectorComponent,
+    AddUserComponent,
+  ],
+  templateUrl: './users.component.html',
+  styleUrl: './users.component.css',
+})
+export class UsersComponent implements OnInit, OnDestroy {
+  private readonly userService = inject(UserService);
+  private readonly schoolContext = inject(SchoolContextService);
+  private readonly auth = inject(AuthService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  private schoolSub?: Subscription;
+
+  showAddForm = false;
+  formMode: 'add' | 'edit' | 'view' = 'add';
+  selectedUserId?: string;
+  users: Record<string, unknown>[] = [];
+
+  tableConfig: DataTableConfig = {
+    header: {
+      title: 'Users',
+      subtitle: 'Manage school portal users and roles',
+      showAddButton: true,
+      addButtonText: 'Add user',
+      addButtonIcon: 'add',
+      addButtonClass: 'btn-primary',
+    },
+    columns: [
+      {
+        key: 'user',
+        label: 'User',
+        sortable: true,
+        cellType: 'avatar',
+        toggleable: false,
+        avatarConfig: { nameKey: 'username', subtitleKey: 'email' },
+      },
+      {
+        key: 'rolesDisplay',
+        label: 'Roles',
+        sortable: false,
+      },
+      {
+        key: 'isActive',
+        label: 'Status',
+        cellType: 'badge',
+        badgeMap: {
+          true: { cssClass: 'b-green', label: 'Active' },
+          false: { cssClass: 'b-red', label: 'Inactive' },
+        },
+      },
+    ],
+    actions: [
+      { label: 'View', icon: 'visibility', iconColor: '#639922' },
+      { label: 'Edit', icon: 'edit', iconColor: '#1E40AF' },
+    ],
+    searchPlaceholder: 'Search by username or email...',
+    searchKeys: ['username', 'email'],
+    itemLabel: 'users',
+    defaultPageSize: 10,
+    pageSizeOptions: [10, 25, 50],
+  };
+
+  ngOnInit(): void {
+    if (!this.auth.hasPermission('hr.manage')) {
+      this.tableConfig = {
+        ...this.tableConfig,
+        header: {
+          title: 'Users',
+          subtitle: 'Manage school portal users and roles',
+          showAddButton: false,
+        },
+      };
+    }
+
+    this.schoolSub = this.schoolContext.selectedSchool$.subscribe(() => this.loadUsers());
+    this.loadUsers();
+  }
+
+  ngOnDestroy(): void {
+    this.schoolSub?.unsubscribe();
+  }
+
+  get schoolReady(): boolean {
+    return this.schoolContext.hasSchool;
+  }
+
+  loadUsers(): void {
+    if (!this.schoolReady) {
+      this.users = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.userService.getUsers().subscribe({
+      next: (items) => {
+        this.users = items.map((u) => ({
+          id: u.id,
+          username: u.username,
+          email: u.email,
+          isActive: u.isActive,
+          user: u.username,
+          rolesDisplay: (u.roles ?? []).join(', ') || '—',
+          roles: u.roles,
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.snackBar.open('Failed to load users', 'Close', { duration: 3000, panelClass: 'snack-error' });
+      },
+    });
+  }
+
+  openAddForm(): void {
+    this.formMode = 'add';
+    this.selectedUserId = undefined;
+    this.showAddForm = true;
+  }
+
+  closeAddForm(): void {
+    this.showAddForm = false;
+  }
+
+  onUserSaved(): void {
+    this.showAddForm = false;
+    this.loadUsers();
+  }
+
+  onAddButtonClicked(): void {
+    if (!this.schoolReady) {
+      this.snackBar.open('Select a school first', 'Close', { duration: 3000, panelClass: 'snack-info' });
+      return;
+    }
+    this.openAddForm();
+  }
+
+  onActionClicked(event: { action: DataTableAction; row: Record<string, unknown> }): void {
+    const id = event.row['id'] as string;
+    if (event.action.label === 'View') {
+      this.formMode = 'view';
+      this.selectedUserId = id;
+      this.showAddForm = true;
+    } else if (event.action.label === 'Edit') {
+      this.formMode = 'edit';
+      this.selectedUserId = id;
+      this.showAddForm = true;
+    }
+  }
+}
