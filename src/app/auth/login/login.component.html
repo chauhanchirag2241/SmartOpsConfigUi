@@ -98,6 +98,8 @@
         <button type="button" class="forgot">Forgot password?</button>
       </div>
 
+      <div class="error-msg" *ngIf="errorMessage" style="margin-bottom: 0.75rem;">{{ errorMessage }}</div>
+
       <button type="submit" class="btn-login" [disabled]="loading">
         <span *ngIf="!loading">Sign In →</span>
         <span *ngIf="loading">✓ Authenticating...</span>

@@ -23,6 +23,7 @@ interface Particle {
 export class LoginComponent implements OnInit {
   loading = false;
   showPassword = false;
+  errorMessage = '';
   particles: Particle[] = [];
 
   private readonly auth = inject(AuthService);
@@ -32,7 +33,7 @@ export class LoginComponent implements OnInit {
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    rememberMe: [false]
+    rememberMe: [false],
   });
 
   ngOnInit(): void {
@@ -47,7 +48,7 @@ export class LoginComponent implements OnInit {
         dur: `${5 + Math.random() * 8}s`,
         delay: `${Math.random() * 6}s`,
         drift: `${(Math.random() - 0.5) * 80}px`,
-        size: 1.5 + Math.random() * 2.5
+        size: 1.5 + Math.random() * 2.5,
       });
     }
   }
@@ -63,21 +64,19 @@ export class LoginComponent implements OnInit {
     }
 
     this.loading = true;
-    const email = this.loginForm.controls.email.value ?? 'admin@smartops.com';
-    
-    // Simulate API call
-    setTimeout(() => {
-      this.auth.login(
-        {
-          id: 'demo-admin',
-          name: 'School Admin',
-          email,
-          role: 'admin',
-        },
-        'demo-jwt-token',
-      );
-      this.loading = false;
-      void this.router.navigate(['/dashboard']);
-    }, 1500);
+    this.errorMessage = '';
+    const email = this.loginForm.controls.email.value ?? '';
+    const password = this.loginForm.controls.password.value ?? '';
+
+    this.auth.loginWithApi(email, password).subscribe({
+      next: () => {
+        this.loading = false;
+        void this.router.navigate(['/dashboard']);
+      },
+      error: () => {
+        this.loading = false;
+        this.errorMessage = 'Invalid email or password.';
+      },
+    });
   }
 }
