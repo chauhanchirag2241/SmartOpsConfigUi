@@ -31,7 +31,7 @@ export class SidebarComponent {
 
   readonly navItems: NavItem[] = [
     { section: 'Overview', label: 'Dashboard', icon: 'grid_view', route: '/dashboard' },
-    { section: 'Configuration Management', label: 'Schools', icon: 'school', route: '/schools' },
+    { section: 'Configuration Management', label: 'Schools', icon: 'school', route: '/configuration/schools' },
     { label: 'Configuration', icon: 'settings_applications', route: '/configuration' },
     { label: 'Masters', icon: 'category', route: '/masters' },
     { section: 'System', label: 'Settings', icon: 'settings', route: '/settings' },
