@@ -1,1 +1,201 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import 'tailwindcss';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: #f5f6fa;
+  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+  height: 100%;
+  margin: 0;
+}
+
+.snack-success {
+  --mdc-snackbar-container-color: #2e7d32;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+.snack-error {
+  --mdc-snackbar-container-color: #c62828;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+.snack-info {
+  --mdc-snackbar-container-color: #1565c0;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+.snack-warning {
+  --mdc-snackbar-container-color: #ef6c00;
+  --mat-snack-bar-button-color: #fff;
+  --mdc-snackbar-supporting-text-color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b8bec8;
+  border-radius: 3px;
+}
+
+/* Material Form Field Overrides */
+.compact-field {
+  --mdc-outlined-text-field-container-shape: 7px;
+  --mdc-outlined-text-field-outline-color: rgba(0, 0, 0, 0.08);
+  --mdc-outlined-text-field-hover-outline-color: #639922;
+  --mdc-outlined-text-field-focus-outline-color: #639922 !important;
+  --mdc-outlined-text-field-container-color: #f9fafb;
+  --mdc-typography-subtitle1-font-size: 13px;
+  --mdc-outlined-text-field-hover-label-text-color: #3b6d11;
+  --mdc-outlined-text-field-focus-label-text-color: #3b6d11;
+  --mdc-outlined-text-field-hover-input-text-color: #3b6d11;
+  --mat-select-focused-arrow-color: #639922;
+  --mat-select-enabled-arrow-color: #6b7280;
+}
+
+.compact-field:hover .mdc-notched-outline__leading,
+.compact-field:hover .mdc-notched-outline__notch,
+.compact-field:hover .mdc-notched-outline__trailing {
+  border-color: #639922 !important;
+}
+
+.compact-field:hover .mat-mdc-select-arrow,
+.compact-field:hover .mat-mdc-select-value-text,
+.compact-field:hover .mat-datepicker-toggle-default-icon,
+.compact-field:hover input,
+.compact-field:hover textarea {
+  color: #3b6d11 !important;
+}
+
+.compact-field.mat-focused .mdc-notched-outline__leading,
+.compact-field.mat-focused .mdc-notched-outline__notch,
+.compact-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #639922 !important;
+  border-width: 1px !important;
+}
+
+.compact-field.mat-focused .mat-mdc-select-arrow,
+.compact-field.mat-focused .mat-mdc-select-value-text,
+.compact-field.mat-focused .mat-datepicker-toggle-default-icon {
+  color: #639922 !important;
+}
+
+.compact-field .mat-mdc-form-field-infix {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  min-height: 36px !important;
+}
+
+.compact-field .mat-mdc-text-field-wrapper {
+  padding: 0 10px !important;
+}
+
+.compact-field .mat-mdc-form-field-subscript-wrapper {
+  padding-left: 0;
+}
+
+.compact-field .mat-mdc-icon-button {
+  padding: 4px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.compact-field .mat-mdc-icon-button .mat-icon,
+.compact-field .mat-datepicker-toggle-default-icon {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 20px;
+  line-height: 20px;
+}
+
+/* Material Select Option Overrides */
+.mat-mdc-option:hover:not(.mdc-list-item--disabled),
+.mat-mdc-option.mdc-list-item--activated:not(.mdc-list-item--disabled) {
+  background-color: #eaf3de !important;
+}
+
+.mat-mdc-option:hover:not(.mdc-list-item--disabled) .mdc-list-item__primary-text,
+.mat-mdc-option.mdc-list-item--activated:not(.mdc-list-item--disabled) .mdc-list-item__primary-text {
+  color: #3b6d11 !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) .mdc-list-item__primary-text {
+  color: #639922 !important;
+}
+
+.mat-pseudo-checkbox-checked::after {
+  color: #639922 !important;
+}
+
+.mat-primary {
+  --mat-option-selected-state-icon-color: #639922;
+  --mat-option-selected-state-label-text-color: #639922;
+  --mat-pseudo-checkbox-checked-icon-color: #639922;
+}
+
+/* Material Datepicker Theme Overrides */
+.mat-datepicker-content {
+  --mat-datepicker-calendar-date-selected-state-background-color: #639922;
+  --mat-datepicker-calendar-date-selected-state-text-color: #fff;
+  --mat-datepicker-calendar-date-hover-state-background-color: #eaf3de;
+  --mat-datepicker-calendar-date-focus-state-background-color: #eaf3de;
+  --mat-datepicker-calendar-date-today-outline-color: #639922;
+  --mat-datepicker-calendar-date-today-selected-state-outline-color: #639922;
+}
+
+.mat-datepicker-content .mat-calendar-body-selected {
+  background-color: #639922 !important;
+  color: #fff !important;
+}
+
+.mat-datepicker-content .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #639922 !important;
+}
+
+.mat-datepicker-content .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover
+  .mat-calendar-body-cell-content:not(.mat-calendar-body-selected),
+.mat-datepicker-content .mat-calendar-body-active
+  .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background-color: #eaf3de !important;
+}
+
+.mat-datepicker-content .mat-calendar-body-cell-content,
+.mat-datepicker-content .mat-calendar-period-button,
+.mat-datepicker-content .mat-calendar-previous-button,
+.mat-datepicker-content .mat-calendar-next-button {
+  color: #1a1a1a;
+}
+
+.mat-datepicker-content .mat-calendar-period-button:hover,
+.mat-datepicker-content .mat-calendar-previous-button:hover,
+.mat-datepicker-content .mat-calendar-next-button:hover {
+  color: #3b6d11;
+}
+
+.mat-datepicker-toggle-active,
+.mat-datepicker-toggle .mat-mdc-icon-button {
+  color: #639922 !important;
+}
+
+/* ERP Custom Dialog */
+.erp-dialog .mat-mdc-dialog-container {
+  border-radius: 14px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.delete-item {
+  color: #c0392b !important;
+}
+
+.delete-item .mat-icon {
+  color: #c0392b !important;
+}

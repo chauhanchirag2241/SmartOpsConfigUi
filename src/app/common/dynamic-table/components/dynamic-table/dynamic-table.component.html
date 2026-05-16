@@ -1,0 +1,299 @@
+@if (config.header) {
+  <header class="page-header">
+    <div class="header-info">
+      <h1>{{ config.header.title }}</h1>
+      @if (config.header.subtitle) {
+        <span>{{ config.header.subtitle }}</span>
+      }
+    </div>
+    @if (config.header.showAddButton) {
+      <button
+        type="button"
+        [class]="config.header.addButtonClass ?? 'btn-primary'"
+        id="add-button"
+        (click)="onAddButtonClick()"
+      >
+        <mat-icon>{{ config.header.addButtonIcon ?? 'add' }}</mat-icon>
+        {{ config.header.addButtonText ?? 'Add' }}
+      </button>
+    }
+  </header>
+}
+
+<div class="table-wrap">
+  <div class="toolbar">
+    @if (config.showSearch !== false) {
+      <div class="search-wrap">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input
+          type="text"
+          [placeholder]="config.searchPlaceholder ?? 'Search...'"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+          id="smart-table-search"
+        />
+      </div>
+    }
+
+    @if (config.filters?.length) {
+      @for (filter of config.filters; track filter.value) {
+        <button
+          type="button"
+          class="filter-chip"
+          [class.active]="activeFilter?.value === filter.value"
+          (click)="setFilter(filter)"
+        >
+          <mat-icon>{{ filter.icon }}</mat-icon>
+          {{ filter.label }}
+        </button>
+      }
+    }
+
+    <div class="toolbar-right">
+      @if (config.showColumnToggle !== false) {
+        <div class="col-drop">
+          <button type="button" class="icon-btn" (click)="toggleColMenu($event)">
+            <mat-icon>view_column</mat-icon>
+            Columns
+          </button>
+          <div class="col-menu" [class.show]="showColMenu">
+            @for (col of getToggleableColumns(); track col.key) {
+              <label class="col-opt">
+                <input
+                  type="checkbox"
+                  [checked]="columnVisibility[col.key] !== false"
+                  (change)="toggleColumnVisibility(col.key, $any($event.target).checked)"
+                />
+                {{ col.label }}
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      @if (config.showExport !== false) {
+        <button type="button" class="icon-btn" (click)="onExportClick()">
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (selectedRows.size > 0 && config.bulkActions?.length) {
+    <div class="bulk-bar">
+      <div class="bulk-count">{{ selectedRows.size }} row{{ selectedRows.size !== 1 ? 's' : '' }} selected</div>
+      <div class="bulk-actions">
+        @for (ba of config.bulkActions ?? []; track trackBulkAction($index, ba)) {
+          <button type="button" class="bulk-btn" [class.danger]="ba.danger" (click)="onBulkAction(ba)">
+            <mat-icon>{{ ba.icon }}</mat-icon>
+            {{ ba.label }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          @if (config.selectable !== false) {
+            <th class="th-check">
+              <input
+                type="checkbox"
+                [checked]="selectAll"
+                [indeterminate]="indeterminate"
+                (change)="toggleSelectAll($any($event.target).checked)"
+              />
+            </th>
+          }
+
+          @for (col of visibleColumns; track col.key) {
+            <th
+              [class.sortable]="col.sortable"
+              [class.sort-asc]="sortColumn === col.key && sortDirection === 'asc'"
+              [class.sort-desc]="sortColumn === col.key && sortDirection === 'desc'"
+              [ngStyle]="col.width ? { width: col.width } : {}"
+              [style.text-align]="col.align ?? 'left'"
+              (click)="col.sortable ? sortCol(col) : null"
+            >
+              {{ col.label }}
+              @if (col.sortable) {
+                <span class="si">
+                  <mat-icon class="sort-arrow">expand_less</mat-icon>
+                  <mat-icon class="sort-arrow">expand_more</mat-icon>
+                </span>
+              }
+            </th>
+          }
+
+          @if (config.actions?.length) {
+            <th class="th-actions">
+              <span class="actions-dots">···</span>
+            </th>
+          }
+        </tr>
+      </thead>
+
+      <tbody>
+        @if (pagedData.length) {
+          @for (row of pagedData; let i = $index; track trackPagedRow(i, row)) {
+            <tr [class.selected]="isRowSelected(i)" [ngClass]="rowClassFn ? rowClassFn(row) : ''">
+              @if (config.selectable !== false) {
+                <td class="td-check" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="isRowSelected(i)"
+                    (change)="toggleRowSelection(getGlobalIndex(i))"
+                  />
+                </td>
+              }
+
+              @for (col of visibleColumns; track col.key) {
+                <td [style.text-align]="col.align ?? 'left'">
+                  @let cellVal = getCellValue(row, col.key);
+                  @switch (col.cellType) {
+                    @case ('badge') {
+                      <span class="badge" [ngClass]="getBadgeClass(col, cellVal)">
+                        @if (getBadgeIcon(col, cellVal)) {
+                          <mat-icon class="badge-icon">{{ getBadgeIcon(col, cellVal) }}</mat-icon>
+                        }
+                        {{ getBadgeLabel(col, cellVal) }}
+                      </span>
+                    }
+                    @case ('progress') {
+                      <div class="prog-wrap">
+                        <div class="prog-bar">
+                          <div
+                            class="prog-fill"
+                            [style.width.%]="cellVal"
+                            [style.background]="getProgressColor(col, cellVal)"
+                          ></div>
+                        </div>
+                        <span class="prog-val">{{ cellVal }}%</span>
+                      </div>
+                    }
+                    @case ('avatar') {
+                      @if (col.avatarConfig) {
+                        <div class="cell-user">
+                          <div
+                            class="av"
+                            [ngClass]="row[col.avatarConfig.avatarClassKey ?? ''] || getAvatarClass(row[col.avatarConfig.nameKey])"
+                          >
+                            {{ row[col.avatarConfig.initialsKey ?? ''] || getAvatarInitials(row[col.avatarConfig.nameKey]) }}
+                          </div>
+                          <div>
+                            <div class="cell-name">{{ row[col.avatarConfig.nameKey] }}</div>
+                            @if (col.avatarConfig.subtitleKey) {
+                              <div class="cell-sub">{{ row[col.avatarConfig.subtitleKey] }}</div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    }
+                    @case ('custom') {
+                      @if (customCellTemplate) {
+                        <ng-container
+                          *ngTemplateOutlet="customCellTemplate; context: { $implicit: row, column: col }"
+                        ></ng-container>
+                      }
+                    }
+                    @case ('date') {
+                      {{ $any(cellVal) | date:'dd-MM-yyyy' }}
+                    }
+                    @default {
+                      {{ cellVal }}
+                    }
+                  }
+                </td>
+              }
+
+              @if (config.actions?.length) {
+                <td class="td-actions" (click)="$event.stopPropagation()">
+                  <button type="button" class="dot-btn" (click)="openContextMenu($event, i)" title="More actions">
+                    ⋮
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        } @else {
+          <tr>
+            <td [attr.colspan]="totalColumnsCount" class="empty-state">
+              <mat-icon class="empty-icon">search_off</mat-icon>
+              <span>No records found</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer">
+    <div class="foot-info">
+      Showing <b>{{ showingStart }}–{{ showingEnd }}</b> of
+      <b>{{ serverSide ? totalRecords : filteredData.length }}</b> {{ config.itemLabel ?? 'records' }}
+    </div>
+    <div class="page-size">
+      Rows per page
+      <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+        @for (opt of pageSizeOptions; track opt) {
+          <option [ngValue]="opt">{{ opt }}</option>
+        }
+      </select>
+    </div>
+    <div class="pagination">
+      <button
+        type="button"
+        class="pg-btn"
+        [class.disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+      >
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      @for (page of paginationPages; track trackPaginationPage($index, page)) {
+        @if (page === '...') {
+          <span class="pg-btn pg-ellipsis">...</span>
+        } @else {
+          <button
+            type="button"
+            class="pg-btn"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        }
+      }
+
+      <button
+        type="button"
+        class="pg-btn"
+        [class.disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+      >
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="ctx-menu"
+  #ctxMenu
+  [class.show]="ctxMenuVisible"
+  [style.top.px]="ctxMenuTop"
+  [style.left.px]="ctxMenuLeft"
+>
+  @for (action of config.actions ?? []; track trackContextAction($index, action)) {
+    @if (action.separatorBefore) {
+      <div class="ctx-sep"></div>
+    }
+    <button type="button" class="ctx-item" [class.danger]="action.danger" (click)="onActionClick(action)">
+      <mat-icon [style.color]="action.iconColor ?? 'inherit'">{{ action.icon }}</mat-icon>
+      {{ action.label }}
+    </button>
+  }
+</div>

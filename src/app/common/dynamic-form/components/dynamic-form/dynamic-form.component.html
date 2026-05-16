@@ -1,0 +1,14 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <div style="display: flex; flex-wrap: wrap; gap: 16px;">
+    @for (field of config; track field.controlName) {
+      <div [style.flex]="'0 0 calc(' + (field.width || '100%') + ' - 16px)'">
+        <app-dynamic-field [config]="field" [group]="form" />
+      </div>
+    }
+  </div>
+
+  <div style="margin-top: 20px; display: flex; gap: 10px;">
+    <button mat-button type="button" (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" type="submit">{{ submitLabel }}</button>
+  </div>
+</form>

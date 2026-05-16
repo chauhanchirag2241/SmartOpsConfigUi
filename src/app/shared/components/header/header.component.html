@@ -1,0 +1,20 @@
+<mat-toolbar class="app-header">
+  <span class="spacer"></span>
+
+
+  <button mat-icon-button type="button" [matMenuTriggerFor]="userMenu" aria-label="User menu">
+    <mat-icon>account_circle</mat-icon>
+  </button>
+
+  <mat-menu #userMenu="matMenu">
+    <button mat-menu-item disabled>
+      <mat-icon>person</mat-icon>
+      <span>{{ auth.currentUser?.name ?? 'Signed in user' }}</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item type="button" (click)="onLogout()">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
