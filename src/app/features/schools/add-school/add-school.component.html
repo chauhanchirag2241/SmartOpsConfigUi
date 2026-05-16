@@ -73,6 +73,22 @@
           </div>
         </div>
       </div>
+      <div class="card portal-subdomain-card">
+        <div class="card-title"><mat-icon>language</mat-icon>Portal & subdomain</div>
+        <div class="card-sub">Each school gets its own URL, e.g. dps-ahmedabad.smartops.com</div>
+        <div class="grid2">
+          <div class="field full">
+            <label>School subdomain <span class="req">*</span></label>
+            <div class="subdomain-wrap">
+              <span class="subdomain-prefix">https://</span>
+              <input class="subdomain-input" formControlName="subdomain" placeholder="dps-ahmedabad" />
+              <span class="subdomain-suffix">.smartops.com</span>
+            </div>
+          </div>
+          <app-dynamic-field [config]="configs['customDomain']" [group]="schoolForm" />
+          <app-dynamic-field [config]="configs['sslCertificate']" [group]="schoolForm" />
+        </div>
+      </div>
       <div class="card">
         <div class="card-title"><mat-icon>palette</mat-icon>Brand colors</div>
         <div class="card-sub">Colors used in portal, reports, and certificates</div>
@@ -101,7 +117,7 @@
                     <div class="subdomain-wrap">
                       <span class="subdomain-prefix">https://</span>
                       <input class="subdomain-input" formControlName="subdomain" placeholder="dps-ahmedabad" />
-                      <span class="subdomain-suffix">.smartops.app</span>
+                      <span class="subdomain-suffix">.smartops.com</span>
                     </div>
                   </div>
                 } @else {

@@ -161,9 +161,6 @@ export class AddSchoolComponent implements OnInit {
       { key: 'primaryEmail' }, { key: 'principalEmail' }, { key: 'website' },
     ]},
     { tab: 1, icon: 'palette', title: 'Brand colors', subtitle: 'Colors used in portal, reports, and certificates', grid: 'grid2', fields: [] },
-    { tab: 1, icon: 'language', title: 'Portal & subdomain', grid: 'grid2', fields: [
-      { key: 'subdomain', full: true }, { key: 'customDomain' }, { key: 'sslCertificate' },
-    ]},
     { tab: 2, icon: 'calendar_month', title: 'Academic year', grid: 'grid3', fields: [
       { key: 'academicYearFormat' }, { key: 'currentAcademicYear' }, { key: 'gradingSystem' },
       { key: 'passingPercentage' }, { key: 'workingDaysPerWeek' }, { key: 'schoolTiming' },

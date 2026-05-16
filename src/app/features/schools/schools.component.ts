@@ -197,7 +197,7 @@ export class SchoolsComponent implements OnInit {
       });
     } else if (event.action.label === 'Open portal') {
       const subdomain = event.row['subdomain'] as string;
-      window.open(`https://${subdomain}.smartops.app`, '_blank');
+      window.open(`https://${subdomain}.smartops.com`, '_blank');
     }
   }
 
