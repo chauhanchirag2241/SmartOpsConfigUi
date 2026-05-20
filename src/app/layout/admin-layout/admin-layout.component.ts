@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { LayoutUiService } from '../../core/services/layout-ui.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -14,9 +15,9 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
   styleUrl: './admin-layout.component.scss',
 })
 export class AdminLayoutComponent {
-  sidebarOpened = true;
+  readonly layoutUi = inject(LayoutUiService);
 
   onMenuToggle(): void {
-    this.sidebarOpened = !this.sidebarOpened;
+    this.layoutUi.toggleSidebar();
   }
 }

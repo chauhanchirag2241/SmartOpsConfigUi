@@ -1,3 +1,4 @@
+@import './style.css';
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 @import 'tailwindcss';
 
@@ -7,7 +8,7 @@
 
 html,
 body {
-  background: #f5f6fa;
+  background: var(--bg-page, #f5f6fa);
   font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
   height: 100%;
   margin: 0;

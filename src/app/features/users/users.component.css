@@ -1,11 +1,1 @@
-.users-page {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.hint {
-  color: #6b7280;
-  font-size: 14px;
-  margin: 0 0 8px;
-}
+/* Shared styles: src/style.css */

@@ -1,4 +1,15 @@
 <mat-toolbar class="app-header">
+  @if (!layoutUi.sidebarOpened()) {
+    <button
+      mat-icon-button
+      type="button"
+      class="sidebar-toggle"
+      (click)="layoutUi.toggleSidebar()"
+      aria-label="Open menu"
+    >
+      <mat-icon>read_more</mat-icon>
+    </button>
+  }
   <span class="spacer"></span>
 
 
