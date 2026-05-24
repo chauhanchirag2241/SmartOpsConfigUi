@@ -24,6 +24,10 @@
         <mat-icon>verified_user</mat-icon>
         Permissions
       </button>
+      <button type="button" [class.active]="activeTab === 'widgets'" (click)="setTab('widgets')">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard widgets
+      </button>
       @if (isEditMode) {
         <button type="button" [class.active]="activeTab === 'users'" (click)="setTab('users')">
           <mat-icon>group</mat-icon>
@@ -101,6 +105,41 @@
         </div>
       }
 
+      @if (activeTab === 'widgets') {
+        <div class="card">
+          <div class="card-title">
+            <mat-icon>dashboard</mat-icon>
+            Dashboard widgets
+            @if (canEdit) {
+              <button type="button" class="link-btn" (click)="selectAllWidgets(true)">Select all</button>
+              <button type="button" class="link-btn" (click)="selectAllWidgets(false)">Clear all</button>
+            }
+          </div>
+          <p class="hint-text">
+            Widgets also require the linked module &quot;View&quot; permission. Users only see data for their assigned scope (e.g. teacher class mappings).
+          </p>
+          @for (category of widgetCategories; track category) {
+            <h3 class="widget-category">{{ category }}</h3>
+            <div class="widget-permission-grid">
+              @for (widget of widgetsForCategory(category); track widget.widgetCode) {
+                <label class="widget-permission-item" [class.needs-menu]="widget.canView && !menuHasView(widget.requiredMenuCode)">
+                  <input
+                    type="checkbox"
+                    [checked]="widget.canView"
+                    [disabled]="!canEdit"
+                    (change)="setWidgetPermission(widget, $any($event.target).checked)"
+                  />
+                  <span>
+                    <strong>{{ widget.widgetName }}</strong>
+                    <small>Requires {{ widget.requiredMenuCode }} view</small>
+                  </span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+      }
+
       @if (activeTab === 'users' && isEditMode) {
         <app-school-selector />
         @if (!schoolReady) {
@@ -152,7 +191,7 @@
           } @else {
             <span class="summary-chip">
               <mat-icon>verified</mat-icon>
-              {{ enabledPermissionCount }} permissions
+              {{ enabledPermissionCount }} menu · {{ enabledWidgetCount }} widgets
             </span>
             <button type="submit" class="save-btn" [disabled]="saving">
               <mat-icon>save</mat-icon>

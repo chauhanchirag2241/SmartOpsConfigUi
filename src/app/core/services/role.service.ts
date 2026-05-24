@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import type { IRoleMenuPermission } from '../models/permission.model';
+import type { IRoleDashboardWidgetPermission, IRoleMenuPermission } from '../models/permission.model';
 import type { SchoolUserDto } from './user.service';
 
 export interface RoleDto {
@@ -10,6 +10,7 @@ export interface RoleDto {
   code: string;
   description?: string;
   menuPermissions: IRoleMenuPermission[];
+  dashboardWidgetPermissions?: IRoleDashboardWidgetPermission[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -25,6 +26,7 @@ export class RoleService {
     code: string;
     description?: string;
     menuPermissions: IRoleMenuPermission[];
+    dashboardWidgetPermissions?: IRoleDashboardWidgetPermission[];
   }): Observable<RoleDto> {
     return this.api.post<RoleDto>('roles', payload);
   }
@@ -46,6 +48,17 @@ export class RoleService {
 
   updateRolePermissions(roleId: string, permissions: IRoleMenuPermission[]): Observable<void> {
     return this.api.put<void>(`roles/${roleId}/permissions`, { permissions });
+  }
+
+  getDashboardWidgetTemplates(): Observable<IRoleDashboardWidgetPermission[]> {
+    return this.api.get<IRoleDashboardWidgetPermission[]>('menus/dashboard-widgets');
+  }
+
+  updateRoleDashboardWidgets(
+    roleId: string,
+    permissions: IRoleDashboardWidgetPermission[],
+  ): Observable<void> {
+    return this.api.put<void>(`roles/${roleId}/dashboard-widgets`, { permissions });
   }
 
   getUsersInRole(roleId: string): Observable<SchoolUserDto[]> {

@@ -407,3 +407,41 @@ code {
   cursor: pointer;
   font-size: 0.85rem;
 }
+
+.widget-category {
+  font-size: 0.9rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.widget-permission-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin-bottom: 0.5rem;
+}
+
+.widget-permission-item {
+  align-items: flex-start;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.widget-permission-item.needs-menu {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.widget-permission-item strong {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.widget-permission-item small {
+  color: var(--text-muted, #64748b);
+  display: block;
+  font-size: 0.75rem;
+}

@@ -103,6 +103,7 @@ export class AddUserComponent implements OnInit {
             name,
             code: name.toUpperCase(),
             menuPermissions: [],
+            dashboardWidgetPermissions: [],
           }));
         },
       });

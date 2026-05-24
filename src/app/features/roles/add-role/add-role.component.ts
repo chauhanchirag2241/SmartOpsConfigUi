@@ -12,7 +12,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, switchMap } from 'rxjs';
 import { MenuCodes } from '../../../core/constants/menu-codes';
-import { IRoleMenuPermission } from '../../../core/models/permission.model';
+import {
+  IRoleDashboardWidgetPermission,
+  IRoleMenuPermission,
+} from '../../../core/models/permission.model';
 import { PermissionService } from '../../../core/services/permission.service';
 import { SchoolContextService } from '../../../core/services/school-context.service';
 import { RoleDto, RoleService } from '../../../core/services/role.service';
@@ -48,13 +51,14 @@ export class AddRoleComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
 
   form!: FormGroup;
-  activeTab: 'details' | 'permissions' | 'users' = 'details';
+  activeTab: 'details' | 'permissions' | 'widgets' | 'users' = 'details';
   loading = true;
   saving = false;
   errorMessage = '';
   roleUserRows: RoleUserRow[] = [];
   loadingUsers = false;
   menuPermissions: IRoleMenuPermission[] = [];
+  dashboardWidgetPermissions: IRoleDashboardWidgetPermission[] = [];
 
   get canEdit(): boolean {
     return this.mode !== 'view' && this.permissionService.canEdit(MenuCodes.Roles);
@@ -85,6 +89,14 @@ export class AddRoleComponent implements OnInit {
     );
   }
 
+  get enabledWidgetCount(): number {
+    return this.dashboardWidgetPermissions.filter((w) => w.canView).length;
+  }
+
+  get widgetCategories(): string[] {
+    return [...new Set(this.dashboardWidgetPermissions.map((w) => w.category))];
+  }
+
   ngOnInit(): void {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -93,9 +105,13 @@ export class AddRoleComponent implements OnInit {
       isActive: [true],
     });
 
-    this.roleService.getMenuTemplates().subscribe({
-      next: (menus) => {
+    forkJoin({
+      menus: this.roleService.getMenuTemplates(),
+      widgets: this.roleService.getDashboardWidgetTemplates(),
+    }).subscribe({
+      next: ({ menus, widgets }) => {
         this.menuPermissions = menus.map((m) => ({ ...m }));
+        this.dashboardWidgetPermissions = widgets.map((w) => ({ ...w }));
         if (this.roleId && this.mode !== 'add') {
           this.loadRole(this.roleId);
         } else {
@@ -104,7 +120,7 @@ export class AddRoleComponent implements OnInit {
         }
       },
       error: () => {
-        this.errorMessage = 'Failed to load menus.';
+        this.errorMessage = 'Failed to load permissions.';
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -117,7 +133,7 @@ export class AddRoleComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'details' | 'permissions' | 'users'): void {
+  setTab(tab: 'details' | 'permissions' | 'widgets' | 'users'): void {
     this.activeTab = tab;
     if (tab === 'users' && this.roleId && this.schoolReady) {
       this.loadRoleUsers();
@@ -144,6 +160,26 @@ export class AddRoleComponent implements OnInit {
       m.canDelete = checked;
       m.canExport = checked;
     });
+  }
+
+  setWidgetPermission(widget: IRoleDashboardWidgetPermission, checked: boolean): void {
+    if (!this.canEdit) return;
+    widget.canView = checked;
+  }
+
+  selectAllWidgets(checked: boolean): void {
+    if (!this.canEdit) return;
+    this.dashboardWidgetPermissions.forEach((w) => (w.canView = checked));
+  }
+
+  widgetsForCategory(category: string): IRoleDashboardWidgetPermission[] {
+    return this.dashboardWidgetPermissions.filter((w) => w.category === category);
+  }
+
+  menuHasView(menuCode: string): boolean {
+    return this.menuPermissions.some(
+      (m) => m.menuCode === menuCode && m.canView,
+    );
   }
 
   toggleRoleUser(row: RoleUserRow): void {
@@ -173,6 +209,7 @@ export class AddRoleComponent implements OnInit {
           code: String(code).trim().toUpperCase(),
           description: String(description || '').trim() || undefined,
           menuPermissions: this.menuPermissions,
+          dashboardWidgetPermissions: this.dashboardWidgetPermissions,
         })
         .subscribe({
           next: () => {
@@ -201,6 +238,12 @@ export class AddRoleComponent implements OnInit {
       .pipe(
         switchMap(() =>
           this.roleService.updateRolePermissions(this.roleId!, this.menuPermissions),
+        ),
+        switchMap(() =>
+          this.roleService.updateRoleDashboardWidgets(
+            this.roleId!,
+            this.dashboardWidgetPermissions,
+          ),
         ),
       )
       .subscribe({
@@ -299,6 +342,20 @@ export class AddRoleComponent implements OnInit {
         canEdit: !!existing.canEdit,
         canDelete: !!existing.canDelete,
         canExport: !!existing.canExport,
+      };
+    });
+
+    const widgetSource = role.dashboardWidgetPermissions ?? [];
+    const widgetsByCode = new Map(widgetSource.map((p) => [p.widgetCode, p]));
+    this.dashboardWidgetPermissions = this.dashboardWidgetPermissions.map((template) => {
+      const existing = widgetsByCode.get(template.widgetCode);
+      if (!existing) {
+        return { ...template };
+      }
+      return {
+        ...template,
+        widgetId: existing.widgetId || template.widgetId,
+        canView: !!existing.canView,
       };
     });
   }

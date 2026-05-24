@@ -25,3 +25,14 @@ export interface IRoleMenuPermission {
   canDelete: boolean;
   canExport: boolean;
 }
+
+export interface IRoleDashboardWidgetPermission {
+  widgetId: string;
+  widgetCode: string;
+  widgetName: string;
+  category: string;
+  requiredMenuCode: string;
+  displayOrder: number;
+  defaultSize: string;
+  canView: boolean;
+}
