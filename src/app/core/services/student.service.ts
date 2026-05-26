@@ -85,16 +85,6 @@ export class StudentService {
           tcNumber: studentData.tcNo
         }
       ] : [],
-      feeConfigs: [
-        {
-          discountType: studentData.discountType,
-          discountValue: (studentData.discountValue && !isNaN(studentData.discountValue)) ? Number(studentData.discountValue) : null,
-          isPercentage: studentData.discountUnit === '%',
-          discountRemarks: studentData.discountRemarks,
-          paymentMode: studentData.paymentMode,
-          firstDueDate: this.toDateOnlyString(studentData.firstDueDate)
-        }
-      ]
     };
 
     console.log('Sending student payload:', payload);
@@ -151,16 +141,6 @@ export class StudentService {
           tcNumber: studentData.tcNo
         }
       ] : [],
-      feeConfigs: [
-        {
-          discountType: studentData.discountType,
-          discountValue: (studentData.discountValue && !isNaN(studentData.discountValue)) ? Number(studentData.discountValue) : null,
-          isPercentage: studentData.discountUnit === '%',
-          discountRemarks: studentData.discountRemarks,
-          paymentMode: studentData.paymentMode,
-          firstDueDate: this.toDateOnlyString(studentData.firstDueDate)
-        }
-      ]
     };
     return this.api.put(`students/${id}`, payload);
   }
