@@ -10,7 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 
 import { DynamicFieldComponent } from '../../../common/dynamic-form/components/dynamic-field/dynamic-field.component';
 import { FileUploadComponent, SelectedUploadFile } from '../../../shared/components/file-upload/file-upload.component';
@@ -35,7 +35,7 @@ export class AddSchoolComponent implements OnInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly schoolService = inject(SchoolService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly snackBar = inject(NotificationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   protected readonly finalTabIndex = 5;

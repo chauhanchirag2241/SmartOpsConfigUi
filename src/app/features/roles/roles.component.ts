@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../core/services/notification.service';
 import { MenuCodes } from '../../core/constants/menu-codes';
 import { PermissionService } from '../../core/services/permission.service';
 import { RoleDto, RoleService } from '../../core/services/role.service';
@@ -18,7 +19,7 @@ import type { DataTableAction, DataTableConfig } from '../../common/dynamic-tabl
 export class RolesComponent implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly permissionService = inject(PermissionService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly snackBar = inject(NotificationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   showAddForm = false;

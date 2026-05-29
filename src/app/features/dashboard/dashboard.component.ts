@@ -32,15 +32,6 @@ interface ActivityItem {
   tone: 'good' | 'alert' | 'warn';
 }
 
-interface FeeItem {
-  className: string;
-  students: number;
-  collected: string;
-  total: string;
-  percent: number;
-  pending: number;
-}
-
 interface AlertItem {
   icon: string;
   title: string;
@@ -66,8 +57,6 @@ export class DashboardComponent {
   readonly stats: DashboardStat[] = [
     { label: 'Total students', value: '248', icon: 'groups', trend: '+12', trendDirection: 'up' },
     { label: 'Present today', value: '221', icon: 'how_to_reg', trend: '89%', trendDirection: 'up' },
-    { label: 'Fees collected', value: 'Rs 1.8L', icon: 'payments', trend: '68%', trendDirection: 'up' },
-    { label: 'Fees overdue', value: '32', icon: 'warning', trend: '-3', trendDirection: 'down' },
   ];
 
   readonly attendance: AttendanceItem[] = [
@@ -98,13 +87,6 @@ export class DashboardComponent {
     { initials: 'AS', name: 'Arjun Shah', detail: 'Absent - no reason', badge: 'Alert', tone: 'alert' },
     { initials: 'PM', name: 'Priya Modi', detail: 'TC issued - Class 9B', badge: 'TC', tone: 'warn' },
     { initials: 'VJ', name: 'Vivek Joshi', detail: 'Fee overdue - 30 days', badge: 'Due', tone: 'alert' },
-  ];
-
-  readonly fees: FeeItem[] = [
-    { className: 'Class 10', students: 52, collected: 'Rs 62,400', total: 'Rs 90,000', percent: 69, pending: 16 },
-    { className: 'Class 9', students: 48, collected: 'Rs 55,200', total: 'Rs 72,000', percent: 77, pending: 11 },
-    { className: 'Class 8', students: 44, collected: 'Rs 48,000', total: 'Rs 66,000', percent: 73, pending: 12 },
-    { className: 'Class 7', students: 40, collected: 'Rs 44,000', total: 'Rs 60,000', percent: 73, pending: 10 },
   ];
 
   readonly alerts: AlertItem[] = [

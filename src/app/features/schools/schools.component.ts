@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { NotificationService } from '../../core/services/notification.service';
 
 import { AddSchoolComponent } from './add-school/add-school.component';
 import { SchoolService } from '../../core/services/school.service';
@@ -23,7 +24,7 @@ import type {
   styleUrl: './schools.component.css',
 })
 export class SchoolsComponent implements OnInit {
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly snackBar = inject(NotificationService);
   private readonly schoolService = inject(SchoolService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly dialog = inject(MatDialog);

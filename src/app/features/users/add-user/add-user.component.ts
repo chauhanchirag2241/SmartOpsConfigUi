@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from '../../../core/services/notification.service';
 import { finalize } from 'rxjs';
 import { MenuCodes } from '../../../core/constants/menu-codes';
 import { PermissionService } from '../../../core/services/permission.service';
@@ -37,7 +37,7 @@ export class AddUserComponent implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly permissionService = inject(PermissionService);
   private readonly schoolContext = inject(SchoolContextService);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly snackBar = inject(NotificationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   form!: FormGroup;
