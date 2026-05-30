@@ -39,6 +39,15 @@ interface AlertItem {
   tone: 'danger' | 'warning' | 'success';
 }
 
+interface FeeItem {
+  className: string;
+  students: number;
+  collected: string;
+  total: string;
+  percent: number;
+  pending: string;
+}
+
 interface QuickAction {
   icon: string;
   label: string;
@@ -93,6 +102,13 @@ export class DashboardComponent {
     { icon: 'payments', title: '32 fees overdue', subtitle: 'Action needed', tone: 'danger' },
     { icon: 'person_off', title: '18 absent today', subtitle: 'No reason given', tone: 'warning' },
     { icon: 'workspace_premium', title: 'Exam in 5 days', subtitle: 'Class 10 - final term', tone: 'success' },
+  ];
+
+  readonly fees: FeeItem[] = [
+    { className: 'Class 10A', students: 42, collected: 'Rs 4.8L', total: 'Rs 5.6L', percent: 86, pending: 'Rs 80K' },
+    { className: 'Class 9B', students: 38, collected: 'Rs 3.9L', total: 'Rs 5.1L', percent: 76, pending: 'Rs 1.2L' },
+    { className: 'Class 8C', students: 44, collected: 'Rs 4.1L', total: 'Rs 4.8L', percent: 85, pending: 'Rs 70K' },
+    { className: 'Class 7A', students: 36, collected: 'Rs 2.8L', total: 'Rs 4.2L', percent: 67, pending: 'Rs 1.4L' },
   ];
 
   readonly quickActions: QuickAction[] = [
