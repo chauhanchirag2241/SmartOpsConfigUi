@@ -8,6 +8,9 @@ export interface SchoolUserDto {
   email: string;
   isActive: boolean;
   lockoutEnabled?: boolean;
+  userTypeId?: string;
+  userTypeCode?: string;
+  userTypeName?: string;
   roles: string[];
 }
 
@@ -17,6 +20,7 @@ export interface CreateUserPayload {
   password?: string;
   isActive: boolean;
   lockoutEnabled: boolean;
+  userTypeId?: string;
   roleNames: string[];
 }
 
@@ -25,6 +29,7 @@ export interface UpdateUserPayload {
   email: string;
   isActive: boolean;
   lockoutEnabled: boolean;
+  userTypeId?: string;
 }
 
 @Injectable({ providedIn: 'root' })

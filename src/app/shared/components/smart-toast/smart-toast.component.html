@@ -1,4 +1,4 @@
-<div class="smart-toast" [class]="'smart-toast--' + data.type" role="status" aria-live="polite">
+<div class="smart-toast" [class.smart-toast--success]="data.type === 'success'" [class.smart-toast--error]="data.type === 'error'" [class.smart-toast--warning]="data.type === 'warning'" [class.smart-toast--info]="data.type === 'info'" role="status" aria-live="polite">
   <div class="smart-toast__icon" aria-hidden="true">
     <mat-icon>{{ icon }}</mat-icon>
   </div>

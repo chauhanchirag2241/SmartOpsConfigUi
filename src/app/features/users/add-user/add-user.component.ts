@@ -16,6 +16,7 @@ import { PermissionService } from '../../../core/services/permission.service';
 import { SchoolContextService } from '../../../core/services/school-context.service';
 import { RoleDto, RoleService } from '../../../core/services/role.service';
 import { UserService } from '../../../core/services/user.service';
+import { UserTypeDto, UserTypeService } from '../../../core/services/user-type.service';
 
 const FALLBACK_ROLES = ['Admin'];
 
@@ -34,6 +35,7 @@ export class AddUserComponent implements OnInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
+  private readonly userTypeService = inject(UserTypeService);
   private readonly roleService = inject(RoleService);
   private readonly permissionService = inject(PermissionService);
   private readonly schoolContext = inject(SchoolContextService);
@@ -42,6 +44,7 @@ export class AddUserComponent implements OnInit {
 
   form!: FormGroup;
   roles: RoleDto[] = [];
+  userTypes: UserTypeDto[] = [];
   selectedRoles = new Set<string>();
   isSaving = false;
   loading = false;
@@ -65,6 +68,7 @@ export class AddUserComponent implements OnInit {
       username: ['', [Validators.required, Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
       password: [''],
+      userTypeId: ['', Validators.required],
       isActive: [true],
       lockoutEnabled: [true],
     });
@@ -79,6 +83,16 @@ export class AddUserComponent implements OnInit {
     }
 
     this.loadRoles();
+    this.loadUserTypes();
+  }
+
+  private loadUserTypes(): void {
+    this.userTypeService.getUserTypes().subscribe({
+      next: (types) => {
+        this.userTypes = types;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private loadRoles(): void {
@@ -146,7 +160,7 @@ export class AddUserComponent implements OnInit {
       return;
     }
 
-    const { username, email, password, isActive, lockoutEnabled } = this.form.getRawValue();
+    const { username, email, password, userTypeId, isActive, lockoutEnabled } = this.form.getRawValue();
     const roleNames = [...this.selectedRoles];
     this.isSaving = true;
 
@@ -156,6 +170,7 @@ export class AddUserComponent implements OnInit {
           username: String(username).trim(),
           email: String(email).trim(),
           password: String(password),
+          userTypeId: String(userTypeId),
           isActive: !!isActive,
           lockoutEnabled: !!lockoutEnabled,
           roleNames,
@@ -185,6 +200,7 @@ export class AddUserComponent implements OnInit {
       .updateUser(this.userId, {
         username: String(username).trim(),
         email: String(email).trim(),
+        userTypeId: String(userTypeId) || undefined,
         isActive: !!isActive,
         lockoutEnabled: !!lockoutEnabled,
       })
@@ -227,6 +243,7 @@ export class AddUserComponent implements OnInit {
         this.form.patchValue({
           username: user.username,
           email: user.email,
+          userTypeId: user.userTypeId ?? '',
           isActive: user.isActive,
           lockoutEnabled: user.lockoutEnabled ?? true,
         });

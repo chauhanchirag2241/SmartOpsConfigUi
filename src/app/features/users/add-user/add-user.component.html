@@ -60,6 +60,19 @@
           }
         </label>
 
+        <label class="field" [class.invalid]="showError('userTypeId')">
+          <span>User type <strong>*</strong></span>
+          <select formControlName="userTypeId">
+            <option value="">Select user type</option>
+            @for (type of userTypes; track type.id) {
+              <option [value]="type.id">{{ type.name }}</option>
+            }
+          </select>
+          @if (showError('userTypeId')) {
+            <em>User type is required</em>
+          }
+        </label>
+
         <div class="field toggles">
           <label class="checkbox-field">
             <input type="checkbox" formControlName="isActive" />

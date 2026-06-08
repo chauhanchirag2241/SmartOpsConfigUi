@@ -38,6 +38,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/roles/roles.component').then((m) => m.RolesComponent),
       },
+      {
+        path: 'settings',
+        canActivate: [permissionGuard],
+        data: { menuCode: MenuCodes.Settings, permission: 'view' },
+        loadComponent: () =>
+          import('./features/settings/settings.component').then((m) => m.SettingsComponent),
+      },
     ],
   },
   {
@@ -51,5 +58,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: '' },
+  { path: '**', redirectTo: 'auth/login' },
 ];

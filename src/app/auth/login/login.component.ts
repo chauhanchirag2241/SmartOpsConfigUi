@@ -1,7 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
 interface Particle {
@@ -29,6 +30,7 @@ export class LoginComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -37,6 +39,10 @@ export class LoginComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.auth.ensureValidSessionOrClear();
+    if (this.route.snapshot.queryParamMap.get('sessionExpired') === '1') {
+      this.errorMessage = 'Your session expired. Please sign in again.';
+    }
     this.generateParticles();
   }
 
@@ -57,6 +63,21 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
+  private resolveLoginError(err: unknown): string {
+    const body = (err as { error?: unknown })?.error;
+    if (typeof body === 'string' && body.trim()) {
+      return body;
+    }
+    if (body && typeof body === 'object') {
+      const record = body as Record<string, unknown>;
+      const message = record['message'] ?? record['title'];
+      if (typeof message === 'string' && message.trim()) {
+        return message;
+      }
+    }
+    return 'Invalid email or password.';
+  }
+
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -68,15 +89,18 @@ export class LoginComponent implements OnInit {
     const email = this.loginForm.controls.email.value ?? '';
     const password = this.loginForm.controls.password.value ?? '';
 
-    this.auth.loginWithApi(email, password).subscribe({
-      next: () => {
+    this.auth
+      .loginWithApi(email, password)
+      .pipe(finalize(() => {
         this.loading = false;
-        void this.router.navigate(['/dashboard']);
-      },
-      error: () => {
-        this.loading = false;
-        this.errorMessage = 'Invalid email or password.';
-      },
-    });
+      }))
+      .subscribe({
+        next: () => {
+          void this.router.navigate(['/dashboard']);
+        },
+        error: (err) => {
+          this.errorMessage = this.resolveLoginError(err);
+        },
+      });
   }
 }

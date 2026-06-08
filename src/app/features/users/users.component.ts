@@ -58,6 +58,11 @@ export class UsersComponent implements OnInit, OnDestroy {
         avatarConfig: { nameKey: 'username', subtitleKey: 'email' },
       },
       {
+        key: 'userTypeName',
+        label: 'User type',
+        sortable: true,
+      },
+      {
         key: 'rolesDisplay',
         label: 'Roles',
         sortable: false,
@@ -122,6 +127,7 @@ export class UsersComponent implements OnInit, OnDestroy {
           email: u.email,
           isActive: u.isActive,
           user: u.username,
+          userTypeName: u.userTypeName ?? '—',
           rolesDisplay: (u.roles ?? []).join(', ') || '—',
           roles: u.roles,
         }));
