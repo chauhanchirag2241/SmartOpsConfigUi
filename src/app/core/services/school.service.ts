@@ -81,9 +81,6 @@ export interface SchoolPayload {
   loginAttemptsBeforeLock?: number | null;
   twoFactorEnabled?: boolean;
   ipWhitelistEnabled?: boolean;
-  branchDataIsolation?: boolean;
-  sharedFeeStructure?: boolean;
-  centralAdminViewAllBranches?: boolean;
   branches?: SchoolBranch[];
 }
 

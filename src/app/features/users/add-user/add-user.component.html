@@ -120,6 +120,53 @@
         </div>
       </div>
 
+      <div class="roles-block">
+        <div class="roles-header">
+          <h3>
+            <mat-icon>account_tree</mat-icon>
+            Branches
+          </h3>
+          <small>User can only see data for assigned branches (School Admin sees all)</small>
+          @if (branchesLoading) {
+            <span class="roles-status">Loading branches…</span>
+          }
+        </div>
+
+        <input
+          type="search"
+          class="branch-search"
+          placeholder="Search branches..."
+          [(ngModel)]="branchSearch"
+          [ngModelOptions]="{ standalone: true }"
+          [disabled]="!canEdit"
+        />
+
+        <div class="role-chips">
+          @for (branch of filteredBranches; track branch.id) {
+            <button
+              type="button"
+              class="chip"
+              [class.selected]="isBranchSelected(branch.id)"
+              [disabled]="!canEdit"
+              (click)="toggleBranch(branch.id)"
+            >
+              {{ branch.name }}
+              @if (defaultBranchId === branch.id) {
+                <span class="chip-tag">default</span>
+              }
+            </button>
+          } @empty {
+            @if (!branchesLoading) {
+              <p class="roles-hint">No branches for this school.</p>
+            }
+          }
+        </div>
+
+        @if (selectedBranchIds.size > 1) {
+          <p class="roles-hint">Click a selected branch chip again to set default (first selected is default).</p>
+        }
+      </div>
+
       @if (canEdit) {
         <footer class="actions">
           <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>

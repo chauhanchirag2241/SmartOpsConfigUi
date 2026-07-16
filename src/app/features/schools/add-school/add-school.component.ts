@@ -85,9 +85,6 @@ export class AddSchoolComponent implements OnInit {
     { key: 'whatsappNotifications', label: 'WhatsApp notifications', desc: 'Automated WhatsApp messages via API' },
     { key: 'twoFactorAuth', label: 'Two-factor authentication', desc: 'Require 2FA for admin and principal roles' },
     { key: 'ipWhitelist', label: 'IP whitelist', desc: 'Restrict admin access to specific IP addresses' },
-    { key: 'branchDataIsolation', label: 'Branch-wise data isolation', desc: 'Each branch has its own student, staff and fee data' },
-    { key: 'sharedFeeStructure', label: 'Shared fee structure across branches', desc: 'All branches use same fee heads and amounts' },
-    { key: 'centralAdminView', label: 'Central admin can view all branches', desc: 'Super admin sees consolidated reports' },
   ];
 
   readonly configs: Record<string, FormFieldConfig> = {
@@ -399,9 +396,6 @@ export class AddSchoolComponent implements OnInit {
       loginAttemptsBeforeLock: raw.loginAttemptsBeforeLock ? Number(raw.loginAttemptsBeforeLock) : null,
       twoFactorEnabled: !!raw.twoFactorAuth,
       ipWhitelistEnabled: !!raw.ipWhitelist,
-      branchDataIsolation: !!raw.branchDataIsolation,
-      sharedFeeStructure: !!raw.sharedFeeStructure,
-      centralAdminViewAllBranches: !!raw.centralAdminView,
       branches: this.branches.filter((b) => b.name?.trim()).map((b) => ({
         id: b.id,
         name: b.name,
@@ -530,9 +524,6 @@ export class AddSchoolComponent implements OnInit {
       whatsappNotifications: [false],
       twoFactorAuth: [false],
       ipWhitelist: [false],
-      branchDataIsolation: [true],
-      sharedFeeStructure: [false],
-      centralAdminView: [true],
     });
   }
 
@@ -561,7 +552,6 @@ export class AddSchoolComponent implements OnInit {
       whatsappNotifications: portal?.['whatsappNotifications'] ?? false,
       twoFactorAuth: data['twoFactorEnabled'] ?? false,
       ipWhitelist: data['ipWhitelistEnabled'] ?? false,
-      centralAdminView: data['centralAdminViewAllBranches'] ?? true,
     });
 
     this.feeHeads = this.parseJson<string[]>(data['feeHeadsJson'] as string) ?? this.feeHeads;

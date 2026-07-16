@@ -7,7 +7,7 @@ import {
   Output,
   inject,
 } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationService } from '../../../core/services/notification.service';
 import { finalize } from 'rxjs';
@@ -16,6 +16,7 @@ import { PermissionService } from '../../../core/services/permission.service';
 import { SchoolContextService } from '../../../core/services/school-context.service';
 import { RoleDto, RoleService } from '../../../core/services/role.service';
 import { UserService } from '../../../core/services/user.service';
+import { BranchService, BranchDropdownItem } from '../../../core/services/branch.service';
 import { UserTypeDto, UserTypeService } from '../../../core/services/user-type.service';
 
 const FALLBACK_ROLES = ['Admin'];
@@ -23,7 +24,7 @@ const FALLBACK_ROLES = ['Admin'];
 @Component({
   selector: 'app-add-user',
   standalone: true,
-  imports: [ReactiveFormsModule, MatIconModule],
+  imports: [ReactiveFormsModule, FormsModule, MatIconModule],
   templateUrl: './add-user.component.html',
   styleUrl: './add-user.component.css',
 })
@@ -35,6 +36,7 @@ export class AddUserComponent implements OnInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly userService = inject(UserService);
+  private readonly branchService = inject(BranchService);
   private readonly userTypeService = inject(UserTypeService);
   private readonly roleService = inject(RoleService);
   private readonly permissionService = inject(PermissionService);
@@ -46,6 +48,11 @@ export class AddUserComponent implements OnInit {
   roles: RoleDto[] = [];
   userTypes: UserTypeDto[] = [];
   selectedRoles = new Set<string>();
+  schoolBranches: BranchDropdownItem[] = [];
+  selectedBranchIds = new Set<string>();
+  defaultBranchId: string | null = null;
+  branchSearch = '';
+  branchesLoading = false;
   isSaving = false;
   loading = false;
   rolesLoading = false;
@@ -84,6 +91,63 @@ export class AddUserComponent implements OnInit {
 
     this.loadRoles();
     this.loadUserTypes();
+    this.loadSchoolBranches();
+  }
+
+  get filteredBranches(): BranchDropdownItem[] {
+    const term = this.branchSearch.trim().toLowerCase();
+    if (!term) {
+      return this.schoolBranches;
+    }
+    return this.schoolBranches.filter((b) => b.name.toLowerCase().includes(term));
+  }
+
+  private loadSchoolBranches(): void {
+    const schoolId = this.schoolContext.selectedSchool?.id;
+    if (!schoolId) {
+      return;
+    }
+    this.branchesLoading = true;
+    this.branchService.getSchoolBranches(schoolId).subscribe({
+      next: (branches) => {
+        this.schoolBranches = branches;
+        this.branchesLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.branchesLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  toggleBranch(branchId: string): void {
+    if (!this.canEdit) return;
+    if (this.selectedBranchIds.has(branchId)) {
+      this.selectedBranchIds.delete(branchId);
+      if (this.defaultBranchId === branchId) {
+        this.defaultBranchId = this.selectedBranchIds.values().next().value ?? null;
+      }
+    } else {
+      this.selectedBranchIds.add(branchId);
+      if (!this.defaultBranchId) {
+        this.defaultBranchId = branchId;
+      }
+    }
+    this.cdr.markForCheck();
+  }
+
+  isBranchSelected(branchId: string): boolean {
+    return this.selectedBranchIds.has(branchId);
+  }
+
+  setDefaultBranch(branchId: string, event: Event): void {
+    event.stopPropagation();
+    if (!this.selectedBranchIds.has(branchId)) {
+      this.selectedBranchIds.add(branchId);
+    }
+    this.defaultBranchId = branchId;
+    this.cdr.markForCheck();
   }
 
   private loadUserTypes(): void {
@@ -162,6 +226,8 @@ export class AddUserComponent implements OnInit {
 
     const { username, email, password, userTypeId, isActive, lockoutEnabled } = this.form.getRawValue();
     const roleNames = [...this.selectedRoles];
+    const branchIds = [...this.selectedBranchIds];
+    const defaultBranchId = this.defaultBranchId ?? undefined;
     this.isSaving = true;
 
     if (this.mode === 'add') {
@@ -174,6 +240,8 @@ export class AddUserComponent implements OnInit {
           isActive: !!isActive,
           lockoutEnabled: !!lockoutEnabled,
           roleNames,
+          branchIds,
+          defaultBranchId,
         })
         .subscribe({
           next: () => {
@@ -203,6 +271,8 @@ export class AddUserComponent implements OnInit {
         userTypeId: String(userTypeId) || undefined,
         isActive: !!isActive,
         lockoutEnabled: !!lockoutEnabled,
+        branchIds,
+        defaultBranchId,
       })
       .subscribe({
         next: () => {
@@ -248,6 +318,8 @@ export class AddUserComponent implements OnInit {
           lockoutEnabled: user.lockoutEnabled ?? true,
         });
         this.selectedRoles = new Set(user.roles ?? []);
+        this.selectedBranchIds = new Set(user.branchIds ?? []);
+        this.defaultBranchId = user.defaultBranchId ?? user.branchIds?.[0] ?? null;
         if (!this.canEdit) {
           this.form.disable();
         }

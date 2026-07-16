@@ -12,6 +12,8 @@ export interface SchoolUserDto {
   userTypeCode?: string;
   userTypeName?: string;
   roles: string[];
+  branchIds?: string[];
+  defaultBranchId?: string;
 }
 
 export interface CreateUserPayload {
@@ -22,6 +24,8 @@ export interface CreateUserPayload {
   lockoutEnabled: boolean;
   userTypeId?: string;
   roleNames: string[];
+  branchIds?: string[];
+  defaultBranchId?: string;
 }
 
 export interface UpdateUserPayload {
@@ -30,6 +34,8 @@ export interface UpdateUserPayload {
   isActive: boolean;
   lockoutEnabled: boolean;
   userTypeId?: string;
+  branchIds?: string[];
+  defaultBranchId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
