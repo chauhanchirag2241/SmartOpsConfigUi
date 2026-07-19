@@ -8,341 +8,75 @@
   </div>
 </div>
 
-<div class="progress-bar">
-  <div class="progress-fill" [style.width.%]="progressWidthPercent"></div>
-</div>
-<div class="step-hint">{{ tabs[currentTab].hint }}</div>
+@if (showTabs) {
+  <div class="tabs" role="tablist">
+    @for (tab of tabs; track tab.label; let i = $index) {
+      <div
+        class="tab"
+        [class.active]="currentTab === i"
+        [class.done]="currentTab > i"
+        (click)="goTab(i)"
+        role="tab"
+      >
+        <div class="tab-num">{{ i + 1 }}</div>
+        {{ tab.label }}
+      </div>
+    }
+  </div>
+  <div class="step-hint">{{ tabs[currentTab].hint }}</div>
+}
 
-<div class="tabs" role="tablist">
-  @for (tab of tabs; track tab.label; let i = $index) {
-    <div
-      class="tab"
-      [class.active]="currentTab === i"
-      [class.done]="currentTab > i"
-      (click)="goTab(i)"
-      role="tab"
-    >
-      <div class="tab-num">{{ i + 1 }}</div>
-      {{ tab.label }}
-    </div>
-  }
-</div>
-
-<form [formGroup]="schoolForm">
-  @switch (currentTab) {
-    @case (0) {
-      @for (card of cardsForCurrentTab; track trackFormCard($index, card)) {
-        <div class="card">
-          <div class="card-title"><mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}</div>
-          <div [class]="card.grid">
-            @for (field of card.fields; track field.key) {
-              <app-dynamic-field [config]="configs[field.key]" [group]="schoolForm" [full]="field.full ?? false" />
-            }
-          </div>
-        </div>
-      }
-    }
-    @case (1) {
+<!-- Basic tab (create always; edit when tab 0) -->
+@if (!showTabs || currentTab === 0) {
+  <form [formGroup]="schoolForm">
+    @for (card of formCards; track trackFormCard($index, card)) {
       <div class="card">
-        <div class="card-title"><mat-icon>image</mat-icon>Logo & favicon</div>
-        <div class="logo-row">
-          <div class="upload-slot">
-            <app-file-upload
-              mode="logo"
-              label="School logo"
-              accept="image/png,image/svg+xml,image/jpeg"
-              [disabled]="mode === 'view'"
-              (fileSelected)="onLogoSelected($event)"
-            />
-            <div class="upload-meta">PNG/SVG, max 2MB</div>
-            <div class="upload-meta">Recommended: 200×200px</div>
-          </div>
-          <div class="upload-slot favicon-slot">
-            <app-file-upload
-              mode="favicon"
-              label="Favicon"
-              accept="image/png,image/x-icon,image/vnd.microsoft.icon"
-              [disabled]="mode === 'view'"
-              (fileSelected)="onFaviconSelected($event)"
-            />
-            <div class="upload-meta">32×32px ICO/PNG</div>
-          </div>
-          <div class="logo-fields">
-            <app-dynamic-field [config]="configs['tagline']" [group]="schoolForm" />
-            <app-dynamic-field [config]="configs['shortName']" [group]="schoolForm" />
-          </div>
-        </div>
-      </div>
-      <div class="card portal-subdomain-card">
-        <div class="card-title"><mat-icon>language</mat-icon>Portal & subdomain</div>
-        <div class="card-sub">Each school gets its own URL, e.g. dps-ahmedabad.smartops.com</div>
-        <div class="grid2">
-          <div class="field full">
-            <label>School subdomain <span class="req">*</span></label>
-            <div class="subdomain-wrap">
-              <span class="subdomain-prefix">https://</span>
-              <input class="subdomain-input" formControlName="subdomain" placeholder="dps-ahmedabad" />
-              <span class="subdomain-suffix">.smartops.com</span>
-            </div>
-          </div>
-          <app-dynamic-field [config]="configs['customDomain']" [group]="schoolForm" />
-          <app-dynamic-field [config]="configs['sslCertificate']" [group]="schoolForm" />
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><mat-icon>palette</mat-icon>Brand colors</div>
-        <div class="card-sub">Colors used in portal, reports, and certificates</div>
-        <div class="grid2 color-grid">
-          @for (colorKey of ['primaryColor', 'secondaryColor', 'accentColor', 'textOnPrimary']; track colorKey) {
-            <div class="field">
-              <label>{{ configs[colorKey].label }}</label>
-              <div class="color-row">
-                <input type="color" [formControlName]="colorKey" />
-                <input type="text" [formControlName]="colorKey" maxlength="7" />
-                <div class="color-preview" [style.background]="schoolForm.get(colorKey)?.value"></div>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-      @for (card of cardsForCurrentTab; track trackFormCard($index, card)) {
-        @if (card.fields.length) {
-          <div class="card">
-            <div class="card-title"><mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}</div>
-            <div [class]="card.grid">
-              @for (field of card.fields; track field.key) {
-                @if (field.key === 'subdomain') {
-                  <div class="field full">
-                    <label>School subdomain <span class="req">*</span></label>
-                    <div class="subdomain-wrap">
-                      <span class="subdomain-prefix">https://</span>
-                      <input class="subdomain-input" formControlName="subdomain" placeholder="dps-ahmedabad" />
-                      <span class="subdomain-suffix">.smartops.com</span>
-                    </div>
-                  </div>
-                } @else {
-                  <app-dynamic-field [config]="configs[field.key]" [group]="schoolForm" [full]="field.full ?? false" />
-                }
-              }
-            </div>
-          </div>
-        }
-      }
-    }
-    @case (2) {
-      @for (card of cardsForCurrentTab; track trackFormCard($index, card)) {
-        <div class="card">
-          <div class="card-title"><mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}</div>
-          <div [class]="card.grid">
-            @for (field of card.fields; track field.key) {
-              <app-dynamic-field [config]="configs[field.key]" [group]="schoolForm" [full]="field.full ?? false" />
-            }
-          </div>
-          @if (card.title === 'Attendance settings') {
-            <div class="section-sep"></div>
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <div class="toggle-label">Auto-notify parents on absence</div>
-                <div class="toggle-desc">Send SMS/email when student is marked absent</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" formControlName="autoNotifyParentsOnAbsence" />
-                <span class="toggle-track"></span>
-                <span class="toggle-thumb"></span>
-              </label>
-            </div>
-            <div class="toggle-row">
-              <div class="toggle-info">
-                <div class="toggle-label">Allow backdated attendance</div>
-                <div class="toggle-desc">Teachers can mark attendance for previous dates</div>
-              </div>
-              <label class="toggle">
-                <input type="checkbox" formControlName="allowBackdatedAttendance" />
-                <span class="toggle-track"></span>
-                <span class="toggle-thumb"></span>
-              </label>
-            </div>
-          }
-        </div>
-      }
-    }
-    @case (3) {
-      @for (card of cardsForCurrentTab; track trackFormCard($index, card)) {
-        <div class="card">
-          <div class="card-title"><mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}</div>
-          <div [class]="card.grid">
-            @for (field of card.fields; track field.key) {
-              <app-dynamic-field [config]="configs[field.key]" [group]="schoolForm" [full]="field.full ?? false" />
-            }
-          </div>
-        </div>
-      }
-      <div class="card">
-        <div class="card-title"><mat-icon>list</mat-icon>Fee heads (types)</div>
-        <div class="card-sub">Define fee categories — assign amounts per class later</div>
-        @for (fee of feeHeads; track $index; let i = $index) {
-          <div class="fee-type-row">
-            <input [(ngModel)]="feeHeads[i]" [ngModelOptions]="{ standalone: true }" placeholder="Fee type name" [disabled]="mode === 'view'" />
-            <button type="button" class="fee-remove" (click)="removeFeeHead(i)" [disabled]="mode === 'view'"><mat-icon>close</mat-icon></button>
-          </div>
-        }
-        <button type="button" class="add-btn" (click)="addFeeHead()" [disabled]="mode === 'view'"><mat-icon>add</mat-icon> Add fee type</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><mat-icon>credit_card</mat-icon>Payment methods</div>
-        <div class="badge-opts">
-          @for (method of paymentMethodOptions; track method) {
-            <div
-              class="badge-opt"
-              [class.active]="isPaymentMethodSelected(method)"
-              (click)="togglePaymentMethod(method)"
-            >{{ method }}</div>
-          }
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><mat-icon>percent</mat-icon>Discount / concession types</div>
-        @for (discount of discountTypes; track $index; let i = $index) {
-          <div class="fee-type-row">
-            <input [(ngModel)]="discountTypes[i]" [ngModelOptions]="{ standalone: true }" placeholder="Discount type" [disabled]="mode === 'view'" />
-            <button type="button" class="fee-remove" (click)="removeDiscountType(i)" [disabled]="mode === 'view'"><mat-icon>close</mat-icon></button>
-          </div>
-        }
-        <button type="button" class="add-btn" (click)="addDiscountType()" [disabled]="mode === 'view'"><mat-icon>add</mat-icon> Add discount type</button>
-      </div>
-    }
-    @case (4) {
-      <div class="card">
-        <div class="card-title"><mat-icon>settings</mat-icon>Portal features</div>
-        @for (toggle of portalToggles.slice(0, 8); track toggle.key) {
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="toggle-label">{{ toggle.label }}</div>
-              <div class="toggle-desc">{{ toggle.desc }}</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" [formControlName]="toggle.key" />
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-        }
-      </div>
-      <div class="card">
-        <div class="card-title"><mat-icon>notifications</mat-icon>Notification channels</div>
-        @for (toggle of portalToggles.slice(8, 12); track toggle.key) {
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="toggle-label">{{ toggle.label }}</div>
-              <div class="toggle-desc">{{ toggle.desc }}</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" [formControlName]="toggle.key" />
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-        }
-      </div>
-      @for (card of cardsForCurrentTab; track trackFormCard($index, card)) {
-        <div class="card">
-          <div class="card-title"><mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}</div>
-          @if (card.title === 'Database & tenant') {
-            <div class="info-chip"><mat-icon>info</mat-icon>Each school gets an isolated PostgreSQL schema for complete data separation</div>
-          }
-          <div [class]="card.grid">
-            @for (field of card.fields; track field.key) {
-              <app-dynamic-field [config]="configs[field.key]" [group]="schoolForm" [full]="field.full ?? false" />
-            }
-          </div>
-          @if (card.title === 'Security settings') {
-            <div class="section-sep"></div>
-            @for (toggle of portalToggles.slice(12, 14); track toggle.key) {
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="toggle-label">{{ toggle.label }}</div>
-                  <div class="toggle-desc">{{ toggle.desc }}</div>
+        <div class="card-title"><mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}</div>
+        <div [class]="card.grid">
+          @for (field of card.fields; track field.key) {
+            @if (field.key === 'subdomain') {
+              <div class="field full">
+                <label>School subdomain <span class="req">*</span></label>
+                <div class="subdomain-wrap">
+                  <span class="subdomain-prefix">https://</span>
+                  <input
+                    class="subdomain-input"
+                    formControlName="subdomain"
+                    placeholder="dps-ahmedabad"
+                  />
+                  <span class="subdomain-suffix">.smartops.com</span>
                 </div>
-                <label class="toggle">
-                  <input type="checkbox" [formControlName]="toggle.key" />
-                  <span class="toggle-track"></span>
-                  <span class="toggle-thumb"></span>
-                </label>
               </div>
+            } @else {
+              <app-dynamic-field
+                [config]="configs[field.key]"
+                [group]="schoolForm"
+                [full]="field.full ?? false"
+              />
             }
           }
         </div>
-      }
-    }
-    @case (5) {
-      <div class="card">
-        <div class="card-title"><mat-icon>account_tree</mat-icon>Head office / main campus</div>
-        <div class="info-chip"><mat-icon>info</mat-icon>The school created above is the main branch. Add additional branches below.</div>
-        <div class="branch-card">
-          <div class="branch-av">HQ</div>
-          <div>
-            <div class="branch-name">{{ headOfficeName }}</div>
-            <div class="branch-sub">Head office — all settings inherited from above</div>
-          </div>
-          <div class="branch-actions"><span class="branch-btn">Main campus</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><mat-icon>business</mat-icon>Additional branches</div>
-        @for (branch of branches; track $index; let i = $index) {
-          <div class="branch-card editable">
-            <div class="branch-av">B{{ i + 1 }}</div>
-            <div class="branch-fields">
-              <input [(ngModel)]="branches[i].name" [ngModelOptions]="{ standalone: true }" placeholder="Branch name" [disabled]="mode === 'view'" />
-              <input [(ngModel)]="branches[i].email" [ngModelOptions]="{ standalone: true }" placeholder="Branch email" type="email" [disabled]="mode === 'view'" />
-              <input [(ngModel)]="branches[i].address" [ngModelOptions]="{ standalone: true }" placeholder="Branch address" [disabled]="mode === 'view'" />
-            </div>
-            <div class="branch-actions">
-              <button type="button" class="branch-btn danger" (click)="removeBranch(i)" [disabled]="mode === 'view'"><mat-icon>delete</mat-icon></button>
-            </div>
-          </div>
-        }
-        <button type="button" class="add-btn" (click)="addBranch()" [disabled]="mode === 'view'"><mat-icon>add</mat-icon> Add branch</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><mat-icon>settings</mat-icon>Branch settings</div>
-        @for (toggle of portalToggles.slice(14); track toggle.key) {
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <div class="toggle-label">{{ toggle.label }}</div>
-              <div class="toggle-desc">{{ toggle.desc }}</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" [formControlName]="toggle.key" />
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-        }
       </div>
     }
-  }
-</form>
 
-<div class="footer-actions">
-  <button type="button" class="btn-cancel" (click)="cancel.emit()">Cancel</button>
-  <button
-    type="button"
-    class="btn-back"
-    [style.visibility]="currentTab === 0 ? 'hidden' : 'visible'"
-    (click)="prevTab()"
-  >
-    <mat-icon>arrow_back</mat-icon> Previous
-  </button>
-  <div class="footer-hint">{{ footerHints[currentTab] }}</div>
-  <button type="button" class="btn-next" (click)="nextTab()" [disabled]="isSaving">
-    @if (currentTab < finalTabIndex) {
-      Next <mat-icon>arrow_forward</mat-icon>
-    } @else {
-      <mat-icon>{{ isSaving ? 'hourglass_empty' : 'save' }}</mat-icon>
-      {{ isSaving ? 'Saving...' : (mode === 'edit' ? 'Update school' : 'Create school') }}
+    @if (mode !== 'view') {
+      <div class="footer-actions">
+        <button type="button" class="btn-outline" (click)="cancel.emit()">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="isSaving" (click)="saveSchool()">
+          <mat-icon>save</mat-icon>
+          {{ isSaving ? 'Saving...' : mode === 'edit' ? 'Save school' : 'Create school' }}
+        </button>
+      </div>
     }
-  </button>
-</div>
+  </form>
+}
 
-
+<!-- Branches tab (edit/view only) -->
+@if (showTabs && currentTab === 1) {
+  <app-dynamic-table
+    [config]="branchTableConfig"
+    [data]="branchRows"
+    (addButtonClicked)="openAddBranch()"
+    (actionClicked)="onBranchTableAction($event)"
+  />
+}

@@ -5,83 +5,48 @@ import { ApiService } from './api.service';
 import { SchoolFilter } from '../../shared/enums/table-filters.enum';
 
 export interface SchoolBranch {
-  id?: string;
+  id: string;
+  schoolId: string;
   name: string;
-  email?: string;
-  address?: string;
-  isHeadOffice?: boolean;
+  email?: string | null;
+  address?: string | null;
+  isHeadOffice: boolean;
+  isActive: boolean;
 }
 
+export interface SaveSchoolBranchPayload {
+  name: string;
+  email?: string | null;
+  address?: string | null;
+}
+
+/** Basic school fields only — branding/academic/fees/portal removed. */
 export interface SchoolPayload {
+  id?: string;
   name: string;
   subdomain: string;
   schoolCode: string;
-  registrationNumber?: string;
-  affiliatedBoard?: string;
-  schoolType?: string;
+  registrationNumber?: string | null;
+  affiliatedBoard?: string | null;
+  schoolType?: string | null;
   establishedYear?: number | null;
-  aboutSchool?: string;
-  streetAddress?: string;
-  city?: string;
-  state?: string;
-  pincode?: string;
-  country?: string;
-  timezone?: string;
-  googleMapsLink?: string;
+  aboutSchool?: string | null;
+  streetAddress?: string | null;
+  city?: string | null;
+  state?: string | null;
+  pincode?: string | null;
+  country?: string | null;
+  timezone?: string | null;
+  googleMapsLink?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  primaryPhone?: string;
-  alternatePhone?: string;
-  fax?: string;
-  primaryEmail?: string;
-  principalEmail?: string;
-  website?: string;
-  logoUrl?: string;
-  faviconUrl?: string;
-  tagline?: string;
-  shortName?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  textOnPrimary?: string;
-  customDomain?: string;
-  sslCertificate?: string;
-  academicYearFormat?: string;
-  currentAcademicYear?: string;
-  gradingSystem?: string;
-  passingPercentage?: number | null;
-  workingDaysPerWeek?: string;
-  schoolTiming?: string;
-  classesFrom?: string;
-  classesTo?: string;
-  sectionsPerClass?: number | null;
-  sectionNaming?: string;
-  maxStudentsPerSection?: number | null;
-  admissionNumberFormat?: string;
-  attendanceType?: string;
-  minimumAttendancePercent?: number | null;
-  lateMarkAfterMinutes?: number | null;
-  autoNotifyParentsOnAbsence?: boolean;
-  allowBackdatedAttendance?: boolean;
-  currency?: string;
-  paymentCycle?: string;
-  feeDueDay?: number | null;
-  lateFeeType?: string;
-  lateFeeValue?: number | null;
-  gracePeriodDays?: number | null;
-  feeHeads?: string[];
-  discountTypes?: string[];
-  paymentMethods?: string[];
-  portalSettings?: Record<string, boolean>;
-  schemaName?: string;
-  storagePlan?: string;
-  dataRegion?: string;
-  sessionTimeoutMinutes?: number | null;
-  passwordPolicy?: string;
-  loginAttemptsBeforeLock?: number | null;
-  twoFactorEnabled?: boolean;
-  ipWhitelistEnabled?: boolean;
-  branches?: SchoolBranch[];
+  primaryPhone?: string | null;
+  alternatePhone?: string | null;
+  fax?: string | null;
+  primaryEmail?: string | null;
+  principalEmail?: string | null;
+  website?: string | null;
+  schemaName?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -122,11 +87,31 @@ export class SchoolService {
     return this.api.post('schools', payload);
   }
 
-  updateSchool(id: string, payload: Record<string, unknown>): Observable<void> {
+  updateSchool(id: string, payload: SchoolPayload): Observable<void> {
     return this.api.put(`schools/${id}`, payload);
   }
 
   deleteSchool(id: string): Observable<void> {
     return this.api.delete(`schools/${id}`);
+  }
+
+  getBranches(schoolId: string): Observable<SchoolBranch[]> {
+    return this.api.get(`schools/${schoolId}/branches`);
+  }
+
+  addBranch(schoolId: string, payload: SaveSchoolBranchPayload): Observable<SchoolBranch> {
+    return this.api.post(`schools/${schoolId}/branches`, payload);
+  }
+
+  updateBranch(
+    schoolId: string,
+    branchId: string,
+    payload: SaveSchoolBranchPayload
+  ): Observable<SchoolBranch> {
+    return this.api.put(`schools/${schoolId}/branches/${branchId}`, payload);
+  }
+
+  deleteBranch(schoolId: string, branchId: string): Observable<void> {
+    return this.api.delete(`schools/${schoolId}/branches/${branchId}`);
   }
 }
