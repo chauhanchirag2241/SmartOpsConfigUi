@@ -25,10 +25,14 @@ import {
   SchoolPayload,
   SchoolService,
 } from '../../../core/services/school.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { BranchFormDialogComponent } from './branch-form-dialog.component';
+
+const ATTENDANCE_EMPLOYEE_TYPE_KEY = 'attendance.employee.type';
 
 type FieldItem = { key: string; full?: boolean };
 type FormCard = { icon: string; title: string; subtitle?: string; grid: 'grid2' | 'grid3'; fields: FieldItem[] };
+type AttendanceEmployeeType = 'Manual' | 'Face' | 'Both';
 
 @Component({
   selector: 'app-add-school',
@@ -53,17 +57,33 @@ export class AddSchoolComponent implements OnInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly schoolService = inject(SchoolService);
+  private readonly settingsService = inject(SettingsService);
   private readonly snackBar = inject(NotificationService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly dialog = inject(MatDialog);
 
   schoolForm!: FormGroup;
+  settingsForm!: FormGroup;
   currentTab = 0;
   isSaving = false;
+  isSavingSettings = false;
+  loadingSettings = false;
+  settingsLoaded = false;
 
   branches: SchoolBranch[] = [];
   branchRows: Record<string, unknown>[] = [];
   loadingBranches = false;
+
+  readonly attendanceTypeConfig: FormFieldConfig = {
+    type: 'select',
+    controlName: 'employeeAttendanceType',
+    label: 'Employee attendance type',
+    options: [
+      { label: 'Manual', value: 'Manual' },
+      { label: 'Face Recognition', value: 'Face' },
+      { label: 'Both', value: 'Both' },
+    ],
+  };
 
   branchTableConfig: DataTableConfig = {
     header: {
@@ -342,6 +362,7 @@ export class AddSchoolComponent implements OnInit {
     return [
       { label: 'Basic', hint: 'School basic details' },
       { label: 'Branches', hint: 'Campuses / branches for this school' },
+      { label: 'Settings', hint: 'Attendance and school preferences' },
     ];
   }
 
@@ -357,6 +378,7 @@ export class AddSchoolComponent implements OnInit {
       };
     }
     this.buildForm();
+    this.buildSettingsForm();
     this.schoolForm.get('name')?.valueChanges.subscribe(() => this.onNameInput());
     if (this.schoolId) {
       this.loadSchool(this.schoolId);
@@ -367,6 +389,9 @@ export class AddSchoolComponent implements OnInit {
     this.currentTab = index;
     if (index === 1 && this.schoolId) {
       this.loadBranches();
+    }
+    if (index === 2 && this.schoolId) {
+      this.loadAttendanceSettings();
     }
   }
 
@@ -526,6 +551,78 @@ export class AddSchoolComponent implements OnInit {
           { duration: 3500, panelClass: 'snack-error' },
         ),
     });
+  }
+
+  loadAttendanceSettings(): void {
+    if (!this.schoolId || this.settingsLoaded || this.loadingSettings) return;
+
+    this.loadingSettings = true;
+    this.settingsService.getAttendanceSettings(this.schoolId).subscribe({
+      next: (rows) => {
+        const map = new Map(rows.map((r) => [r.key, r.value]));
+        const raw = map.get(ATTENDANCE_EMPLOYEE_TYPE_KEY) ?? 'Both';
+        const value = this.normalizeAttendanceType(raw);
+        this.settingsForm.patchValue({ employeeAttendanceType: value });
+        this.settingsLoaded = true;
+        this.loadingSettings = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.settingsForm.patchValue({ employeeAttendanceType: 'Both' });
+        this.settingsLoaded = true;
+        this.loadingSettings = false;
+        this.snackBar.open('Failed to load attendance settings', 'Close', {
+          duration: 3000,
+          panelClass: 'snack-error',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  saveAttendanceSettings(): void {
+    if (this.mode === 'view' || !this.schoolId) return;
+    if (this.settingsForm.invalid) {
+      this.settingsForm.markAllAsTouched();
+      return;
+    }
+
+    const type = this.settingsForm.getRawValue().employeeAttendanceType as AttendanceEmployeeType;
+    this.isSavingSettings = true;
+    this.settingsService
+      .saveAttendanceSettings(this.schoolId, [{ key: ATTENDANCE_EMPLOYEE_TYPE_KEY, value: type }])
+      .subscribe({
+        next: () => {
+          this.isSavingSettings = false;
+          this.snackBar.open('Settings saved', 'Close', {
+            duration: 3000,
+            panelClass: 'snack-success',
+          });
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isSavingSettings = false;
+          this.snackBar.open('Failed to save settings', 'Close', {
+            duration: 3000,
+            panelClass: 'snack-error',
+          });
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  private normalizeAttendanceType(value: string): AttendanceEmployeeType {
+    if (value === 'Manual' || value === 'Face' || value === 'Both') return value;
+    return 'Both';
+  }
+
+  private buildSettingsForm(): void {
+    this.settingsForm = this.fb.group({
+      employeeAttendanceType: ['Both' as AttendanceEmployeeType, Validators.required],
+    });
+    if (this.mode === 'view') {
+      this.settingsForm.disable();
+    }
   }
 
   private openBranchDialog(branch?: SchoolBranch): void {

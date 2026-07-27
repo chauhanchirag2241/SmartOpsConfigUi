@@ -20,4 +20,13 @@ export class SettingsService {
   saveLeaveSettings(schoolId: string, settings: SchoolSettingDto[]): Observable<void> {
     return this.api.put<void>(`schools/${schoolId}/settings`, { settings });
   }
+
+  getAttendanceSettings(schoolId: string): Observable<SchoolSettingDto[]> {
+    const params = new HttpParams().set('prefix', 'attendance.');
+    return this.api.get<SchoolSettingDto[]>(`schools/${schoolId}/settings`, params);
+  }
+
+  saveAttendanceSettings(schoolId: string, settings: SchoolSettingDto[]): Observable<void> {
+    return this.api.put<void>(`schools/${schoolId}/settings`, { settings });
+  }
 }

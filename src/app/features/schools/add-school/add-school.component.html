@@ -80,3 +80,37 @@
     (actionClicked)="onBranchTableAction($event)"
   />
 }
+
+<!-- Settings tab (edit/view only) -->
+@if (showTabs && currentTab === 2) {
+  <form [formGroup]="settingsForm">
+    <div class="card">
+      <div class="card-title"><mat-icon>tune</mat-icon>Attendance</div>
+      @if (loadingSettings) {
+        <p class="page-sub">Loading settings…</p>
+      } @else {
+        <div class="grid2">
+          <app-dynamic-field
+            [config]="attendanceTypeConfig"
+            [group]="settingsForm"
+          />
+        </div>
+      }
+    </div>
+
+    @if (mode !== 'view') {
+      <div class="footer-actions">
+        <button type="button" class="btn-outline" (click)="cancel.emit()">Cancel</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="isSavingSettings || loadingSettings"
+          (click)="saveAttendanceSettings()"
+        >
+          <mat-icon>save</mat-icon>
+          {{ isSavingSettings ? 'Saving...' : 'Save settings' }}
+        </button>
+      </div>
+    }
+  </form>
+}
