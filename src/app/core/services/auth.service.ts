@@ -134,7 +134,6 @@ export class AuthService {
       role: this.mapRole(primaryRole),
       roles,
       roleId: profile.roleId,
-      roleCode: profile.roleCode,
     };
   }
 

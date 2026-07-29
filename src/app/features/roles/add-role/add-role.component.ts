@@ -100,7 +100,6 @@ export class AddRoleComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(100)]],
-      code: ['', [Validators.required, Validators.maxLength(50)]],
       description: ['', Validators.maxLength(256)],
       isActive: [true],
     });
@@ -198,7 +197,7 @@ export class AddRoleComponent implements OnInit {
       return;
     }
 
-    const { name, code, description, isActive } = this.form.getRawValue();
+    const { name, description, isActive } = this.form.getRawValue();
     this.saving = true;
     this.errorMessage = '';
 
@@ -206,7 +205,6 @@ export class AddRoleComponent implements OnInit {
       this.roleService
         .createRole({
           name: String(name).trim(),
-          code: String(code).trim().toUpperCase(),
           description: String(description || '').trim() || undefined,
           menuPermissions: this.menuPermissions,
           dashboardWidgetPermissions: this.dashboardWidgetPermissions,
@@ -231,7 +229,6 @@ export class AddRoleComponent implements OnInit {
     this.roleService
       .updateRole(this.roleId, {
         name: String(name).trim(),
-        code: String(code).trim().toUpperCase(),
         description: String(description || '').trim() || undefined,
         isActive: !!isActive,
       })
@@ -282,7 +279,6 @@ export class AddRoleComponent implements OnInit {
       next: (role) => {
         this.form.patchValue({
           name: role.name,
-          code: role.code,
           description: role.description ?? '',
           isActive: true,
         });

@@ -179,7 +179,6 @@ export class AddUserComponent implements OnInit {
           this.roles = FALLBACK_ROLES.map((name, i) => ({
             id: `fallback-${i}`,
             name,
-            code: name.toUpperCase(),
             menuPermissions: [],
             dashboardWidgetPermissions: [],
           }));

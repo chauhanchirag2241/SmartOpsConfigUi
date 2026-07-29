@@ -51,13 +51,6 @@
                 <em>Name is required</em>
               }
             </label>
-            <label class="field" [class.invalid]="showError('code')">
-              <span>Role code <strong>*</strong></span>
-              <input type="text" formControlName="code" placeholder="e.g. CLASS_TEACHER" />
-              @if (showError('code')) {
-                <em>Code is required</em>
-              }
-            </label>
             <label class="field full">
               <span>Description</span>
               <textarea formControlName="description" placeholder="What this role can do…"></textarea>

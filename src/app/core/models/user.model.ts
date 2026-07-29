@@ -7,6 +7,5 @@ export interface User {
   role: UserRole;
   roles?: string[];
   roleId?: string;
-  roleCode?: string;
   token?: string;
 }
