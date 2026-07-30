@@ -18,13 +18,15 @@ import { RoleDto, RoleService } from '../../../core/services/role.service';
 import { UserService } from '../../../core/services/user.service';
 import { BranchService, BranchDropdownItem } from '../../../core/services/branch.service';
 import { UserTypeDto, UserTypeService } from '../../../core/services/user-type.service';
+import { FormFieldComponent } from '../../../shared/form-controls/form-field';
+import type { FormFieldOption } from '../../../shared/form-controls/form-field';
 
 const FALLBACK_ROLES = ['SmartOpsAdmin'];
 
 @Component({
   selector: 'app-add-user',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, MatIconModule],
+  imports: [ReactiveFormsModule, FormsModule, MatIconModule, FormFieldComponent],
   templateUrl: './add-user.component.html',
   styleUrl: './add-user.component.css',
 })
@@ -68,6 +70,10 @@ export class AddUserComponent implements OnInit {
 
   get selectedSchoolName(): string {
     return this.schoolContext.selectedSchool?.name ?? '';
+  }
+
+  get userTypeOptions(): FormFieldOption[] {
+    return this.userTypes.map((type) => ({ label: type.name, value: type.id }));
   }
 
   ngOnInit(): void {

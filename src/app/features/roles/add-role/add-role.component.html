@@ -44,17 +44,25 @@
             Basic details
           </div>
           <div class="grid-two">
-            <label class="field" [class.invalid]="showError('name')">
-              <span>Role name <strong>*</strong></span>
-              <input type="text" formControlName="name" placeholder="e.g. Class Teacher" />
+            <div class="field-wrap" [class.invalid]="showError('name')">
+              <app-form-field
+                label="Role name"
+                type="text"
+                [required]="true"
+                formControlName="name"
+                placeholder="e.g. Class Teacher"
+              />
               @if (showError('name')) {
                 <em>Name is required</em>
               }
-            </label>
-            <label class="field full">
-              <span>Description</span>
-              <textarea formControlName="description" placeholder="What this role can do…"></textarea>
-            </label>
+            </div>
+            <app-form-field
+              label="Description"
+              type="textarea"
+              [fullWidth]="true"
+              formControlName="description"
+              placeholder="What this role can do…"
+            />
             @if (isEditMode) {
               <label class="field checkbox-field">
                 <input type="checkbox" formControlName="isActive" />

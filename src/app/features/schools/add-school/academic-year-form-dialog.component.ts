@@ -3,27 +3,33 @@ import { ChangeDetectorRef, Component, Inject, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { Observable } from 'rxjs';
 import {
-  SchoolBranch,
-  SchoolService,
-} from '../../../core/services/school.service';
+  AcademicYearPayload,
+  AcademicYearRow,
+  AcademicYearService,
+} from '../../../core/services/academic-year.service';
 import { FormFieldComponent } from '../../../shared/form-controls/form-field';
 
-export interface BranchFormDialogData {
+export interface AcademicYearFormDialogData {
   schoolId: string;
-  branch?: SchoolBranch;
+  year?: AcademicYearRow;
 }
 
 @Component({
-  selector: 'app-branch-form-dialog',
+  selector: 'app-academic-year-form-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule, MatDialogModule, MatIconModule, FormFieldComponent],
   template: `
     <div class="dialog-header">
       <div>
-        <div class="dialog-title">{{ data.branch ? 'Edit branch' : 'Add branch' }}</div>
+        <div class="dialog-title">{{ data.year ? 'Edit academic year' : 'Add academic year' }}</div>
         <div class="dialog-sub">
-          {{ data.branch ? 'Update campus details' : 'Create a new campus for this school' }}
+          {{
+            data.year
+              ? 'Update title and date range'
+              : 'Dates must not overlap another academic year. Current year is derived from the date range.'
+          }}
         </div>
       </div>
       <button type="button" class="icon-btn" [disabled]="saving" (click)="close()">
@@ -37,25 +43,24 @@ export interface BranchFormDialogData {
       }
 
       <app-form-field
-        label="Branch name"
+        label="Title"
         type="text"
         [required]="true"
-        [(ngModel)]="name"
-        placeholder="e.g. West Campus"
+        [(ngModel)]="title"
+        placeholder="e.g. 2026-27"
         (keyup.enter)="save()"
       />
       <app-form-field
-        label="Email"
-        type="text"
-        [(ngModel)]="email"
-        placeholder="branch@school.com"
+        label="Start date"
+        type="date"
+        [required]="true"
+        [(ngModel)]="startDate"
       />
       <app-form-field
-        label="Address"
-        type="textarea"
-        [rows]="3"
-        [(ngModel)]="address"
-        placeholder="Campus address"
+        label="End date"
+        type="date"
+        [required]="true"
+        [(ngModel)]="endDate"
       />
     </div>
 
@@ -65,7 +70,7 @@ export interface BranchFormDialogData {
       </button>
       <button type="button" class="btn-primary" [disabled]="saving" (click)="save()">
         <mat-icon>save</mat-icon>
-        {{ saving ? 'Saving...' : data.branch ? 'Update branch' : 'Add branch' }}
+        {{ saving ? 'Saving...' : data.year ? 'Update year' : 'Add year' }}
       </button>
     </div>
   `,
@@ -161,23 +166,23 @@ export interface BranchFormDialogData {
     `,
   ],
 })
-export class BranchFormDialogComponent {
-  private readonly schoolService = inject(SchoolService);
+export class AcademicYearFormDialogComponent {
+  private readonly ayService = inject(AcademicYearService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  name = '';
-  email = '';
-  address = '';
+  title = '';
+  startDate = '';
+  endDate = '';
   saving = false;
   error = '';
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public readonly data: BranchFormDialogData,
-    private readonly dialogRef: MatDialogRef<BranchFormDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public readonly data: AcademicYearFormDialogData,
+    private readonly dialogRef: MatDialogRef<AcademicYearFormDialogComponent>,
   ) {
-    this.name = data.branch?.name ?? '';
-    this.email = data.branch?.email ?? '';
-    this.address = data.branch?.address ?? '';
+    this.title = data.year?.title ?? '';
+    this.startDate = this.toDateInput(data.year?.startDate);
+    this.endDate = this.toDateInput(data.year?.endDate);
   }
 
   close(): void {
@@ -187,8 +192,19 @@ export class BranchFormDialogComponent {
   }
 
   save(): void {
-    if (!this.name.trim()) {
-      this.error = 'Branch name is required.';
+    const title = this.title.trim();
+    if (!title) {
+      this.error = 'Title is required.';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (!this.startDate || !this.endDate) {
+      this.error = 'Start date and end date are required.';
+      this.cdr.detectChanges();
+      return;
+    }
+    if (this.endDate < this.startDate) {
+      this.error = 'End date cannot be earlier than start date.';
       this.cdr.detectChanges();
       return;
     }
@@ -196,26 +212,32 @@ export class BranchFormDialogComponent {
     this.error = '';
     this.saving = true;
     this.cdr.detectChanges();
-    const payload = {
-      name: this.name.trim(),
-      email: this.email.trim() || null,
-      address: this.address.trim() || null,
+    const payload: AcademicYearPayload = {
+      title,
+      startDate: this.startDate,
+      endDate: this.endDate,
     };
-    const request = this.data.branch
-      ? this.schoolService.updateBranch(
-          this.data.schoolId,
-          this.data.branch.id,
-          payload,
-        )
-      : this.schoolService.addBranch(this.data.schoolId, payload);
+    const request: Observable<unknown> = this.data.year
+      ? this.ayService.updateSchoolAcademicYear(this.data.schoolId, this.data.year.id, payload)
+      : this.ayService.createSchoolAcademicYear(this.data.schoolId, payload);
 
     request.subscribe({
-      next: (branch) => this.dialogRef.close(branch),
-      error: (err) => {
+      next: () => this.dialogRef.close(true),
+      error: (err: unknown) => {
         this.saving = false;
-        this.error = typeof err?.error === 'string' ? err.error : 'Failed to save branch';
+        const e = err as { error?: string | { message?: string } };
+        this.error =
+          typeof e?.error === 'string'
+            ? e.error
+            : (typeof e?.error === 'object' ? e.error?.message : undefined) ||
+              'Failed to save academic year';
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private toDateInput(value?: string): string {
+    if (!value) return '';
+    return String(value).slice(0, 10);
   }
 }

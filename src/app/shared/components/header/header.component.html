@@ -10,8 +10,30 @@
       <mat-icon>read_more</mat-icon>
     </button>
   }
-  <span class="spacer"></span>
 
+  @if (pageChrome.title()) {
+    <div class="header-page-chrome" [class.has-back]="!!pageChrome.onBack()">
+      @if (pageChrome.onBack()) {
+        <button
+          type="button"
+          class="header-back-btn"
+          (click)="pageChrome.goBack()"
+          aria-label="Back"
+        >
+          <mat-icon>arrow_back</mat-icon>
+          <span>Back</span>
+        </button>
+      }
+      <div class="header-page-text">
+        <div class="header-page-title">{{ pageChrome.title() }}</div>
+        @if (pageChrome.subtitle()) {
+          <div class="header-page-subtitle">{{ pageChrome.subtitle() }}</div>
+        }
+      </div>
+    </div>
+  }
+
+  <span class="spacer"></span>
 
   <button mat-icon-button type="button" [matMenuTriggerFor]="userMenu" aria-label="User menu">
     <mat-icon>account_circle</mat-icon>

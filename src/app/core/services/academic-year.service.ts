@@ -2,32 +2,40 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
 import { ApiService } from './api.service';
-import { AcademicYearFilter } from '../../shared/enums/table-filters.enum';
 
-function resolveFilter(label: string): AcademicYearFilter {
-  switch (label) {
-    case 'Active': return AcademicYearFilter.Active;
-    case 'Inactive': return AcademicYearFilter.Inactive;
-    default: return AcademicYearFilter.All;
-  }
+export interface AcademicYearPayload {
+  title: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface AcademicYearRow {
+  id: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  isActive: boolean;
+  isCurrent: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AcademicYearService {
   private readonly api = inject(ApiService);
 
-  getAcademicYears(
+  getSchoolAcademicYears(
+    schoolId: string,
     pageIndex = 1,
-    pageSize = 10,
+    pageSize = 50,
     searchTerm = '',
     sortColumn: string | null = null,
     sortDirection: string | null = null,
-    filter: string = 'All'
-  ): Observable<any> {
+    filter = 'Active',
+  ): Observable<{ items: AcademicYearRow[]; totalCount: number }> {
     let params = new HttpParams()
       .set('pageIndex', pageIndex.toString())
       .set('pageSize', pageSize.toString())
-      .set('filter', resolveFilter(filter).toString());
+      .set('filter', this.resolveFilter(filter).toString());
 
     if (searchTerm) {
       params = params.set('searchTerm', searchTerm);
@@ -39,26 +47,42 @@ export class AcademicYearService {
       params = params.set('sortDirection', sortDirection);
     }
 
-    return this.api.get('academicYears', params);
+    return this.api.get(`schools/${schoolId}/academicYears`, params);
   }
 
-  getAcademicYearDropdown(): Observable<any[]> {
-    return this.api.get<any[]>('academic-year/dropdown');
+  getSchoolAcademicYearById(schoolId: string, id: string): Observable<AcademicYearRow> {
+    return this.api.get(`schools/${schoolId}/academicYears/${id}`);
   }
 
-  createAcademicYear(data: any): Observable<any> {
-    return this.api.post('academicYears', data);
+  createSchoolAcademicYear(schoolId: string, data: AcademicYearPayload): Observable<{ message: string; academicYearId: string }> {
+    return this.api.post(`schools/${schoolId}/academicYears`, data);
   }
 
-  getAcademicYearById(id: string): Observable<any> {
-    return this.api.get(`academicYears/${id}`);
+  updateSchoolAcademicYear(schoolId: string, id: string, data: AcademicYearPayload): Observable<void> {
+    return this.api.put(`schools/${schoolId}/academicYears/${id}`, data);
   }
 
-  updateAcademicYear(id: string, data: any): Observable<any> {
-    return this.api.put(`academicYears/${id}`, { ...data, id });
+  deleteSchoolAcademicYear(schoolId: string, id: string): Observable<void> {
+    return this.api.delete(`schools/${schoolId}/academicYears/${id}`);
   }
 
-  deleteAcademicYear(id: string): Observable<any> {
-    return this.api.delete(`academicYears/${id}`);
+  private resolveFilter(label: string): number {
+    switch (label) {
+      case 'Active':
+        return 1;
+      case 'Inactive':
+      case 'Deleted':
+        return 2;
+      case 'Current':
+        return 3;
+      case 'Upcoming':
+      case 'Draft':
+        return 4;
+      case 'Past':
+      case 'Archived':
+        return 5;
+      default:
+        return 0;
+    }
   }
 }

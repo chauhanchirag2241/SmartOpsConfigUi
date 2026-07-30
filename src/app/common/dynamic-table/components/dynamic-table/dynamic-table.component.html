@@ -1,22 +1,26 @@
 @if (config.header) {
-  <header class="page-header">
-    <div class="header-info">
-      <h1>{{ config.header.title }}</h1>
-      @if (config.header.subtitle) {
+  <header
+    class="page-header"
+    [class.page-header-actions-only]="!!config.header.title.trim() || !config.header.subtitle"
+  >
+    @if (!config.header.title.trim() && config.header.subtitle) {
+      <div class="header-info">
         <span>{{ config.header.subtitle }}</span>
+      </div>
+    }
+    <div class="page-header-actions">
+      @if (config.header.showAddButton) {
+        <button
+          type="button"
+          [class]="config.header.addButtonClass ?? 'btn-primary'"
+          id="add-button"
+          (click)="onAddButtonClick()"
+        >
+          <mat-icon>{{ config.header.addButtonIcon ?? 'add' }}</mat-icon>
+          {{ config.header.addButtonText ?? 'Add' }}
+        </button>
       }
     </div>
-    @if (config.header.showAddButton) {
-      <button
-        type="button"
-        [class]="config.header.addButtonClass ?? 'btn-primary'"
-        id="add-button"
-        (click)="onAddButtonClick()"
-      >
-        <mat-icon>{{ config.header.addButtonIcon ?? 'add' }}</mat-icon>
-        {{ config.header.addButtonText ?? 'Add' }}
-      </button>
-    }
   </header>
 }
 

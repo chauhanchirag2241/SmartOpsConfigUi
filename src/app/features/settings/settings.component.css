@@ -39,19 +39,8 @@
   margin: 0;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.settings-page app-form-field {
   max-width: 320px;
-}
-
-.field select,
-.field input {
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
 }
 
 .hint {

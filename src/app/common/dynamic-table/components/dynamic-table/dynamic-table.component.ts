@@ -7,6 +7,7 @@ import {
   HostListener,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -25,6 +26,7 @@ import {
   DataTableFilter,
 } from '../../models/table-config.interface';
 import { AvatarColorService } from '../../services/avatar-color.service';
+import { PageChromeService } from '../../../../core/services/page-chrome.service';
 
 @Component({
   selector: 'app-dynamic-table',
@@ -33,8 +35,9 @@ import { AvatarColorService } from '../../services/avatar-color.service';
   templateUrl: './dynamic-table.component.html',
   styleUrl: './dynamic-table.component.scss',
 })
-export class DynamicTableComponent implements OnInit, OnChanges {
+export class DynamicTableComponent implements OnInit, OnChanges, OnDestroy {
   private readonly avatarColor = inject(AvatarColorService);
+  private readonly pageChrome = inject(PageChromeService);
   /** Table configuration object */
   @Input() config!: DataTableConfig;
 
@@ -181,6 +184,7 @@ export class DynamicTableComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.initDefaults();
     this.applyFilters();
+    this.syncPageChrome();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -195,6 +199,22 @@ export class DynamicTableComponent implements OnInit, OnChanges {
         this.applyFilters();
       }
     }
+    if (changes['config']) {
+      this.syncPageChrome();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.pageChrome.clear(this);
+  }
+
+  private syncPageChrome(): void {
+    const header = this.config?.header;
+    if (!header?.title?.trim()) {
+      this.pageChrome.clear(this);
+      return;
+    }
+    this.pageChrome.set(header.title, header.subtitle ?? '', this);
   }
 
   private initDefaults(): void {

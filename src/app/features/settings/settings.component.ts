@@ -10,6 +10,8 @@ import { SchoolContextService } from '../../core/services/school-context.service
 import { SettingsService } from '../../core/services/settings.service';
 import { UserTypeDto, UserTypeService } from '../../core/services/user-type.service';
 import { SchoolSelectorComponent } from '../../shared/components/school-selector/school-selector.component';
+import { FormFieldComponent } from '../../shared/form-controls/form-field';
+import type { FormFieldOption } from '../../shared/form-controls/form-field';
 
 const LEAVE_KEYS = {
   staffApprovalMode: 'leave.staff.approvalMode',
@@ -23,7 +25,7 @@ const LEAVE_KEYS = {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [ReactiveFormsModule, MatIconModule, SchoolSelectorComponent],
+  imports: [ReactiveFormsModule, MatIconModule, SchoolSelectorComponent, FormFieldComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css',
 })
@@ -44,6 +46,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   userTypes: UserTypeDto[] = [];
   loading = false;
   saving = false;
+
+  readonly approvalModeOptions: FormFieldOption[] = [
+    { label: 'Any one approver', value: 'AnyOne' },
+    { label: 'All must approve', value: 'AllMust' },
+  ];
 
   get canEdit(): boolean {
     return this.permissionService.canEdit(MenuCodes.Settings);

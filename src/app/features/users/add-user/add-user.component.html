@@ -32,46 +32,59 @@
       </div>
 
       <div class="grid">
-        <label class="field" [class.invalid]="showError('username')">
-          <span>Username <strong>*</strong></span>
-          <input type="text" formControlName="username" placeholder="e.g. principal" maxlength="100" />
+        <div class="field-wrap" [class.invalid]="showError('username')">
+          <app-form-field
+            label="Username"
+            type="text"
+            [required]="true"
+            formControlName="username"
+            placeholder="e.g. principal"
+          />
           @if (showError('username')) {
             <em>Username is required (max 100 characters)</em>
           }
-        </label>
+        </div>
 
-        <label class="field" [class.invalid]="showError('email')">
-          <span>Email <strong>*</strong></span>
-          <input type="email" formControlName="email" placeholder="user@school.com" maxlength="256" />
+        <div class="field-wrap" [class.invalid]="showError('email')">
+          <app-form-field
+            label="Email"
+            type="text"
+            [required]="true"
+            formControlName="email"
+            placeholder="user@school.com"
+          />
           @if (showError('email')) {
             <em>Valid email is required</em>
           }
-        </label>
+        </div>
 
-        <label class="field" [class.invalid]="showError('password')">
-          <span>Password @if (mode === 'add') { <strong>*</strong> }</span>
-          <input
-            type="password"
-            formControlName="password"
-            [placeholder]="mode === 'add' ? 'Min 8 characters' : 'Leave blank to keep current'"
-          />
+        <div class="field-wrap" [class.invalid]="showError('password')">
+          <app-form-field label="Password" type="custom" [required]="mode === 'add'">
+            <input
+              class="form-control"
+              type="password"
+              formControlName="password"
+              [placeholder]="mode === 'add' ? 'Min 8 characters' : 'Leave blank to keep current'"
+            />
+          </app-form-field>
           @if (showError('password')) {
             <em>Password must be at least 8 characters</em>
           }
-        </label>
+        </div>
 
-        <label class="field" [class.invalid]="showError('userTypeId')">
-          <span>User type <strong>*</strong></span>
-          <select formControlName="userTypeId">
-            <option value="">Select user type</option>
-            @for (type of userTypes; track type.id) {
-              <option [value]="type.id">{{ type.name }}</option>
-            }
-          </select>
+        <div class="field-wrap" [class.invalid]="showError('userTypeId')">
+          <app-form-field
+            label="User type"
+            type="select"
+            [required]="true"
+            formControlName="userTypeId"
+            [options]="userTypeOptions"
+            emptyOptionLabel="Select user type"
+          />
           @if (showError('userTypeId')) {
             <em>User type is required</em>
           }
-        </label>
+        </div>
 
         <div class="field toggles">
           <label class="checkbox-field">

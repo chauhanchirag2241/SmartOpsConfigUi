@@ -1,3 +1,16 @@
+.field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field-wrap em {
+  color: var(--danger-color, #a32d2d);
+  font-size: 11px;
+  font-style: normal;
+}
+
 .roles-block h3 {
   font-size: 14px;
   margin: 24px 0 12px;

@@ -1,12 +1,9 @@
-<div class="topbar">
-  <button type="button" class="back-btn" (click)="cancel.emit()">
-    <mat-icon>arrow_back</mat-icon> Schools
-  </button>
-  <div class="title-block">
-    <div class="page-title">{{ pageTitle }}</div>
-    <div class="page-sub">{{ pageSubtitle }}</div>
-  </div>
-</div>
+<span
+  [appPageChrome]="pageTitle"
+  [pageChromeSubtitle]="pageSubtitle"
+  [pageChromeShowBack]="true"
+  (pageChromeBack)="cancel.emit()"
+></span>
 
 @if (showTabs) {
   <div class="tabs" role="tablist">
@@ -23,7 +20,6 @@
       </div>
     }
   </div>
-  <div class="step-hint">{{ tabs[currentTab].hint }}</div>
 }
 
 <!-- Basic tab (create always; edit when tab 0) -->
@@ -81,8 +77,28 @@
   />
 }
 
-<!-- Settings tab (edit/view only) -->
+<!-- Academic Years tab (edit/view only) -->
 @if (showTabs && currentTab === 2) {
+  <app-dynamic-table
+    [config]="academicYearTableConfig"
+    [data]="academicYearRows"
+    (addButtonClicked)="openAddAcademicYear()"
+    (actionClicked)="onAcademicYearTableAction($event)"
+  />
+}
+
+<!-- Class Groups tab (edit/view only) -->
+@if (showTabs && currentTab === 3) {
+  <app-dynamic-table
+    [config]="classGroupTableConfig"
+    [data]="classGroupRows"
+    (addButtonClicked)="openAddClassGroup()"
+    (actionClicked)="onClassGroupTableAction($event)"
+  />
+}
+
+<!-- Settings tab (edit/view only) -->
+@if (showTabs && currentTab === 4) {
   <form [formGroup]="settingsForm">
     <div class="card">
       <div class="card-title"><mat-icon>tune</mat-icon>Attendance</div>

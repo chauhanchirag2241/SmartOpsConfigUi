@@ -6,6 +6,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AuthService } from '../../../core/services/auth.service';
 import { LayoutUiService } from '../../../core/services/layout-ui.service';
+import { PageChromeService } from '../../../core/services/page-chrome.service';
 
 @Component({
   selector: 'app-header',
@@ -16,6 +17,7 @@ import { LayoutUiService } from '../../../core/services/layout-ui.service';
 export class HeaderComponent {
   readonly auth = inject(AuthService);
   readonly layoutUi = inject(LayoutUiService);
+  readonly pageChrome = inject(PageChromeService);
 
   onLogout(): void {
     this.auth.logout();

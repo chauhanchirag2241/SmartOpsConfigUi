@@ -30,13 +30,12 @@
           Staff leave approval
         </h2>
 
-        <label class="field">
-          <span>Approval mode</span>
-          <select formControlName="staffApprovalMode">
-            <option value="AnyOne">Any one approver</option>
-            <option value="AllMust">All must approve</option>
-          </select>
-        </label>
+        <app-form-field
+          label="Approval mode"
+          type="select"
+          formControlName="staffApprovalMode"
+          [options]="approvalModeOptions"
+        />
 
         <div class="chips-block">
           <span class="label">Approver user types</span>
@@ -64,18 +63,19 @@
 
         <p class="hint">Short leaves are routed to the class teacher by default.</p>
 
-        <label class="field">
-          <span>Approval mode</span>
-          <select formControlName="studentApprovalMode">
-            <option value="AnyOne">Any one approver</option>
-            <option value="AllMust">All must approve</option>
-          </select>
-        </label>
+        <app-form-field
+          label="Approval mode"
+          type="select"
+          formControlName="studentApprovalMode"
+          [options]="approvalModeOptions"
+        />
 
-        <label class="field">
-          <span>Long leave threshold (days)</span>
-          <input type="number" formControlName="studentLongLeaveMinDays" min="1" />
-        </label>
+        <app-form-field
+          label="Long leave threshold (days)"
+          type="number"
+          formControlName="studentLongLeaveMinDays"
+          [min]="1"
+        />
 
         <label class="checkbox-field">
           <input type="checkbox" formControlName="studentLongLeaveTransferToPrincipal" />

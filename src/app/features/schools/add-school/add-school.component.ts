@@ -25,8 +25,19 @@ import {
   SchoolPayload,
   SchoolService,
 } from '../../../core/services/school.service';
+import {
+  AcademicYearRow,
+  AcademicYearService,
+} from '../../../core/services/academic-year.service';
+import {
+  ClassGroupRow,
+  ClassGroupService,
+} from '../../../core/services/class-group.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { BranchFormDialogComponent } from './branch-form-dialog.component';
+import { AcademicYearFormDialogComponent } from './academic-year-form-dialog.component';
+import { ClassGroupFormDialogComponent } from './class-group-form-dialog.component';
+import { PageChromeDirective } from '../../../shared/directives/page-chrome.directive';
 
 const ATTENDANCE_EMPLOYEE_TYPE_KEY = 'attendance.employee.type';
 
@@ -45,6 +56,7 @@ type AttendanceEmployeeType = 'Manual' | 'Face' | 'Both';
     MatDialogModule,
     DynamicFieldComponent,
     DynamicTableComponent,
+    PageChromeDirective,
   ],
   templateUrl: './add-school.component.html',
   styleUrl: './add-school.component.css',
@@ -57,6 +69,8 @@ export class AddSchoolComponent implements OnInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly schoolService = inject(SchoolService);
+  private readonly academicYearService = inject(AcademicYearService);
+  private readonly classGroupService = inject(ClassGroupService);
   private readonly settingsService = inject(SettingsService);
   private readonly snackBar = inject(NotificationService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -74,6 +88,14 @@ export class AddSchoolComponent implements OnInit {
   branchRows: Record<string, unknown>[] = [];
   loadingBranches = false;
 
+  academicYears: AcademicYearRow[] = [];
+  academicYearRows: Record<string, unknown>[] = [];
+  loadingAcademicYears = false;
+
+  classGroups: ClassGroupRow[] = [];
+  classGroupRows: Record<string, unknown>[] = [];
+  loadingClassGroups = false;
+
   readonly attendanceTypeConfig: FormFieldConfig = {
     type: 'select',
     controlName: 'employeeAttendanceType',
@@ -87,9 +109,7 @@ export class AddSchoolComponent implements OnInit {
 
   branchTableConfig: DataTableConfig = {
     header: {
-      title: 'Branches',
-      subtitle:
-        'Main Campus is created with the school. Branch saves are independent and never remove existing campuses.',
+      title: '',
       showAddButton: true,
       addButtonText: 'Add branch',
       addButtonIcon: 'add',
@@ -130,6 +150,88 @@ export class AddSchoolComponent implements OnInit {
     searchPlaceholder: 'Search branches...',
     searchKeys: ['name', 'email', 'address'],
     itemLabel: 'branches',
+    defaultPageSize: 10,
+    pageSizeOptions: [10, 25, 50],
+    selectable: false,
+    showExport: false,
+  };
+
+  classGroupTableConfig: DataTableConfig = {
+    header: {
+      title: '',
+      showAddButton: true,
+      addButtonText: 'Add class group',
+      addButtonIcon: 'add',
+      addButtonClass: 'btn-primary',
+    },
+    columns: [
+      { key: 'branchName', label: 'Branch', sortable: true },
+      { key: 'className', label: 'Class name', sortable: true },
+      { key: 'descriptionDisplay', label: 'Description', sortable: false },
+      {
+        key: 'status',
+        label: 'Status',
+        cellType: 'badge',
+        badgeMap: {
+          Active: { cssClass: 'b-green', label: 'Active' },
+          Inactive: { cssClass: 'b-red', label: 'Inactive' },
+        },
+      },
+    ],
+    actions: [
+      { label: 'Edit class group', icon: 'edit', iconColor: '#1E40AF' },
+      {
+        label: 'Delete class group',
+        icon: 'delete',
+        danger: true,
+        separatorBefore: true,
+      },
+    ],
+    searchPlaceholder: 'Search class groups...',
+    searchKeys: ['branchName', 'className', 'description'],
+    itemLabel: 'class groups',
+    defaultPageSize: 10,
+    pageSizeOptions: [10, 25, 50],
+    selectable: false,
+    showExport: false,
+  };
+
+  academicYearTableConfig: DataTableConfig = {
+    header: {
+      title: '',
+      showAddButton: true,
+      addButtonText: 'Add year',
+      addButtonIcon: 'add',
+      addButtonClass: 'btn-primary',
+    },
+    columns: [
+      { key: 'title', label: 'Title', sortable: true },
+      { key: 'startDate', label: 'Start date', sortable: true, cellType: 'date' },
+      { key: 'endDate', label: 'End date', sortable: true, cellType: 'date' },
+      {
+        key: 'status',
+        label: 'Status',
+        cellType: 'badge',
+        badgeMap: {
+          Current: { cssClass: 'b-green', label: 'Current' },
+          Upcoming: { cssClass: 'b-amber', label: 'Upcoming' },
+          Past: { cssClass: 'b-blue', label: 'Past' },
+          Deleted: { cssClass: 'b-red', label: 'Deleted' },
+        },
+      },
+    ],
+    actions: [
+      { label: 'Edit year', icon: 'edit', iconColor: '#1E40AF' },
+      {
+        label: 'Delete year',
+        icon: 'delete',
+        danger: true,
+        separatorBefore: true,
+      },
+    ],
+    searchPlaceholder: 'Search academic years...',
+    searchKeys: ['title'],
+    itemLabel: 'academic years',
     defaultPageSize: 10,
     pageSizeOptions: [10, 25, 50],
     selectable: false,
@@ -336,21 +438,23 @@ export class AddSchoolComponent implements OnInit {
   get pageSubtitle(): string {
     return this.mode === 'add'
       ? 'Enter basic school details — Main Campus is created automatically'
-      : 'Update basic details or manage branches';
+      : 'Update basic details, branches, or academic years';
   }
 
   get showTabs(): boolean {
     return this.mode === 'edit' || this.mode === 'view';
   }
 
-  get tabs(): { label: string; hint: string }[] {
+  get tabs(): { label: string }[] {
     if (!this.showTabs) {
-      return [{ label: 'Basic', hint: 'School basic details' }];
+      return [{ label: 'Basic' }];
     }
     return [
-      { label: 'Basic', hint: 'School basic details' },
-      { label: 'Branches', hint: 'Campuses / branches for this school' },
-      { label: 'Settings', hint: 'Attendance and school preferences' },
+      { label: 'Basic' },
+      { label: 'Branches' },
+      { label: 'Academic Years' },
+      { label: 'Class Groups' },
+      { label: 'Settings' },
     ];
   }
 
@@ -360,6 +464,22 @@ export class AddSchoolComponent implements OnInit {
         ...this.branchTableConfig,
         header: {
           ...this.branchTableConfig.header!,
+          showAddButton: false,
+        },
+        actions: [],
+      };
+      this.academicYearTableConfig = {
+        ...this.academicYearTableConfig,
+        header: {
+          ...this.academicYearTableConfig.header!,
+          showAddButton: false,
+        },
+        actions: [],
+      };
+      this.classGroupTableConfig = {
+        ...this.classGroupTableConfig,
+        header: {
+          ...this.classGroupTableConfig.header!,
           showAddButton: false,
         },
         actions: [],
@@ -379,6 +499,15 @@ export class AddSchoolComponent implements OnInit {
       this.loadBranches();
     }
     if (index === 2 && this.schoolId) {
+      this.loadAcademicYears();
+    }
+    if (index === 3 && this.schoolId) {
+      if (this.branches.length === 0) {
+        this.loadBranches();
+      }
+      this.loadClassGroups();
+    }
+    if (index === 4 && this.schoolId) {
       this.loadAttendanceSettings();
     }
   }
@@ -543,6 +672,199 @@ export class AddSchoolComponent implements OnInit {
     });
   }
 
+  loadAcademicYears(): void {
+    if (!this.schoolId) return;
+    this.loadingAcademicYears = true;
+    this.academicYearService.getSchoolAcademicYears(this.schoolId, 1, 100).subscribe({
+      next: (res) => {
+        this.academicYears = res?.items ?? [];
+        this.academicYearRows = this.academicYears.map((year) => ({
+          ...year,
+          startDate: String(year.startDate ?? '').slice(0, 10),
+          endDate: String(year.endDate ?? '').slice(0, 10),
+        }));
+        this.loadingAcademicYears = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingAcademicYears = false;
+        this.snackBar.open('Failed to load academic years', 'Close', {
+          duration: 3000,
+          panelClass: 'snack-error',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  openAddAcademicYear(): void {
+    this.openAcademicYearDialog();
+  }
+
+  onAcademicYearTableAction(event: {
+    action: DataTableAction;
+    row: Record<string, unknown>;
+    rowIndex: number;
+  }): void {
+    const year = this.academicYears.find((item) => item.id === event.row['id']);
+    if (!year) return;
+
+    if (event.action.label === 'Edit year') {
+      this.openAcademicYearDialog(year);
+      return;
+    }
+
+    if (event.action.label === 'Delete year') {
+      this.deleteAcademicYear(year);
+    }
+  }
+
+  deleteAcademicYear(year: AcademicYearRow): void {
+    if (!this.schoolId) return;
+    if (year.isCurrent || year.status === 'Current') {
+      this.snackBar.open('Cannot delete the current academic year', 'Close', {
+        duration: 3000,
+        panelClass: 'snack-error',
+      });
+      return;
+    }
+    if (!confirm(`Delete academic year "${year.title}"?`)) return;
+
+    this.academicYearService.deleteSchoolAcademicYear(this.schoolId, year.id).subscribe({
+      next: () => {
+        this.snackBar.open('Academic year deleted', 'Close', {
+          duration: 2500,
+          panelClass: 'snack-success',
+        });
+        this.loadAcademicYears();
+      },
+      error: (err) =>
+        this.snackBar.open(
+          typeof err?.error === 'string' ? err.error : 'Failed to delete academic year',
+          'Close',
+          { duration: 3500, panelClass: 'snack-error' },
+        ),
+    });
+  }
+
+  loadClassGroups(): void {
+    if (!this.schoolId) return;
+    this.loadingClassGroups = true;
+    this.classGroupService.getSchoolClassGroups(this.schoolId).subscribe({
+      next: (res) => {
+        this.classGroups = res?.items ?? [];
+        this.classGroupRows = this.classGroups.map((group) => ({
+          ...group,
+          descriptionDisplay: group.description || '—',
+        }));
+        this.loadingClassGroups = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingClassGroups = false;
+        this.snackBar.open('Failed to load class groups', 'Close', {
+          duration: 3000,
+          panelClass: 'snack-error',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  openAddClassGroup(): void {
+    this.openClassGroupDialog();
+  }
+
+  onClassGroupTableAction(event: {
+    action: DataTableAction;
+    row: Record<string, unknown>;
+    rowIndex: number;
+  }): void {
+    const group = this.classGroups.find((item) => item.id === event.row['id']);
+    if (!group) return;
+
+    if (event.action.label === 'Edit class group') {
+      this.openClassGroupDialog(group);
+      return;
+    }
+
+    if (event.action.label === 'Delete class group') {
+      this.deleteClassGroup(group);
+    }
+  }
+
+  deleteClassGroup(group: ClassGroupRow): void {
+    if (!this.schoolId) return;
+    if (!confirm(`Delete class group "${group.className}"?`)) return;
+
+    this.classGroupService.deleteSchoolClassGroup(this.schoolId, group.id).subscribe({
+      next: () => {
+        this.snackBar.open('Class group deleted', 'Close', {
+          duration: 2500,
+          panelClass: 'snack-success',
+        });
+        this.loadClassGroups();
+      },
+      error: (err) =>
+        this.snackBar.open(
+          typeof err?.error === 'string' ? err.error : 'Failed to delete class group',
+          'Close',
+          { duration: 3500, panelClass: 'snack-error' },
+        ),
+    });
+  }
+
+  private openClassGroupDialog(group?: ClassGroupRow): void {
+    if (!this.schoolId) return;
+
+    const open = (branches: SchoolBranch[]) => {
+      if (branches.length === 0) {
+        this.snackBar.open('Add a branch before creating class groups', 'Close', {
+          duration: 3000,
+          panelClass: 'snack-error',
+        });
+        return;
+      }
+
+      const ref = this.dialog.open(ClassGroupFormDialogComponent, {
+        width: '520px',
+        disableClose: true,
+        data: {
+          schoolId: this.schoolId!,
+          branches,
+          group,
+        },
+      });
+
+      ref.afterClosed().subscribe((saved) => {
+        if (saved) {
+          this.snackBar.open(group ? 'Class group updated' : 'Class group created', 'Close', {
+            duration: 2500,
+            panelClass: 'snack-success',
+          });
+          this.loadClassGroups();
+        }
+      });
+    };
+
+    if (this.branches.length > 0) {
+      open(this.branches);
+      return;
+    }
+
+    this.schoolService.getBranches(this.schoolId).subscribe({
+      next: (branches) => {
+        this.branches = branches ?? [];
+        open(this.branches);
+      },
+      error: () =>
+        this.snackBar.open('Failed to load branches', 'Close', {
+          duration: 3000,
+          panelClass: 'snack-error',
+        }),
+    });
+  }
+
   loadAttendanceSettings(): void {
     if (!this.schoolId || this.settingsLoaded || this.loadingSettings) return;
 
@@ -632,6 +954,26 @@ export class AddSchoolComponent implements OnInit {
         panelClass: 'snack-success',
       });
       this.loadBranches();
+    });
+  }
+
+  private openAcademicYearDialog(year?: AcademicYearRow): void {
+    if (!this.schoolId) return;
+
+    const dialogRef = this.dialog.open(AcademicYearFormDialogComponent, {
+      data: { schoolId: this.schoolId, year },
+      panelClass: 'erp-dialog',
+      disableClose: true,
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((saved) => {
+      if (!saved) return;
+      this.snackBar.open(year ? 'Academic year updated' : 'Academic year added', 'Close', {
+        duration: 2500,
+        panelClass: 'snack-success',
+      });
+      this.loadAcademicYears();
     });
   }
 

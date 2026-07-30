@@ -21,6 +21,7 @@ import { SchoolContextService } from '../../../core/services/school-context.serv
 import { RoleDto, RoleService } from '../../../core/services/role.service';
 import { SchoolUserDto, UserService } from '../../../core/services/user.service';
 import { SchoolSelectorComponent } from '../../../shared/components/school-selector/school-selector.component';
+import { FormFieldComponent } from '../../../shared/form-controls/form-field';
 
 interface RoleUserRow {
   id: string;
@@ -32,7 +33,7 @@ interface RoleUserRow {
 @Component({
   selector: 'app-add-role',
   standalone: true,
-  imports: [ReactiveFormsModule, MatIconModule, SchoolSelectorComponent],
+  imports: [ReactiveFormsModule, MatIconModule, SchoolSelectorComponent, FormFieldComponent],
   templateUrl: './add-role.component.html',
   styleUrl: './add-role.component.css',
 })
