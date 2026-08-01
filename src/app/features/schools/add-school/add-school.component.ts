@@ -162,7 +162,6 @@ export class AddSchoolComponent implements OnInit {
         { key: 'state' },
         { key: 'pincode' },
         { key: 'country' },
-        { key: 'timezone' },
         { key: 'googleMapsLink', full: true },
         { key: 'latitude' },
         { key: 'longitude' },
@@ -175,7 +174,6 @@ export class AddSchoolComponent implements OnInit {
       fields: [
         { key: 'primaryPhone' },
         { key: 'alternatePhone' },
-        { key: 'fax' },
         { key: 'primaryEmail' },
         { key: 'principalEmail' },
         { key: 'website', full: true },
@@ -273,15 +271,6 @@ export class AddSchoolComponent implements OnInit {
       placeholder: 'India',
       validations: [{ name: 'required', message: 'Required', validator: Validators.required }],
     },
-    timezone: {
-      type: 'select',
-      controlName: 'timezone',
-      label: 'Timezone',
-      options: [
-        { label: 'IST (UTC+5:30)', value: 'Asia/Kolkata' },
-        { label: 'UTC', value: 'UTC' },
-      ],
-    },
     googleMapsLink: {
       type: 'input',
       controlName: 'googleMapsLink',
@@ -315,7 +304,6 @@ export class AddSchoolComponent implements OnInit {
       label: 'Alternate phone',
       placeholder: '+91...',
     },
-    fax: { type: 'input', controlName: 'fax', label: 'Fax', placeholder: 'Optional' },
     primaryEmail: {
       type: 'input',
       inputType: 'email',
@@ -460,10 +448,12 @@ export class AddSchoolComponent implements OnInit {
           this.saved.emit();
           this.cdr.detectChanges();
         },
-        error: () => {
+        error: (err) => {
           this.isSaving = false;
-          this.snackBar.open('Failed to create school', 'Close', {
-            duration: 3000,
+          const apiMessage =
+            err?.error?.message || err?.error?.title || err?.message || 'Failed to create school';
+          this.snackBar.open(String(apiMessage), 'Close', {
+            duration: 5000,
             panelClass: 'snack-error',
           });
           this.cdr.detectChanges();
@@ -661,13 +651,11 @@ export class AddSchoolComponent implements OnInit {
       state: ['', Validators.required],
       pincode: ['', Validators.required],
       country: ['India', Validators.required],
-      timezone: ['Asia/Kolkata'],
       googleMapsLink: [''],
       latitude: [''],
       longitude: [''],
       primaryPhone: ['', Validators.required],
       alternatePhone: [''],
-      fax: [''],
       primaryEmail: ['', Validators.required],
       principalEmail: [''],
       website: [''],
@@ -692,13 +680,11 @@ export class AddSchoolComponent implements OnInit {
           state: data['state'] ?? '',
           pincode: data['pincode'] ?? '',
           country: data['country'] ?? 'India',
-          timezone: data['timezone'] ?? 'Asia/Kolkata',
           googleMapsLink: data['googleMapsLink'] ?? '',
           latitude: data['latitude'] ?? '',
           longitude: data['longitude'] ?? '',
           primaryPhone: data['primaryPhone'] ?? '',
           alternatePhone: data['alternatePhone'] ?? '',
-          fax: data['fax'] ?? '',
           primaryEmail: data['primaryEmail'] ?? '',
           principalEmail: data['principalEmail'] ?? '',
           website: data['website'] ?? '',
@@ -733,13 +719,11 @@ export class AddSchoolComponent implements OnInit {
       state: raw.state || null,
       pincode: raw.pincode || null,
       country: raw.country || 'India',
-      timezone: raw.timezone || null,
       googleMapsLink: raw.googleMapsLink || null,
       latitude: raw.latitude !== '' && raw.latitude != null ? Number(raw.latitude) : null,
       longitude: raw.longitude !== '' && raw.longitude != null ? Number(raw.longitude) : null,
       primaryPhone: raw.primaryPhone || null,
       alternatePhone: raw.alternatePhone || null,
-      fax: raw.fax || null,
       primaryEmail: raw.primaryEmail || null,
       principalEmail: raw.principalEmail || null,
       website: raw.website || null,

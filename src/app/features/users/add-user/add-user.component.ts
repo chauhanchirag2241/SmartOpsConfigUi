@@ -19,7 +19,7 @@ import { UserService } from '../../../core/services/user.service';
 import { BranchService, BranchDropdownItem } from '../../../core/services/branch.service';
 import { UserTypeDto, UserTypeService } from '../../../core/services/user-type.service';
 
-const FALLBACK_ROLES = ['Admin'];
+const FALLBACK_ROLES = ['SmartOpsAdmin'];
 
 @Component({
   selector: 'app-add-user',

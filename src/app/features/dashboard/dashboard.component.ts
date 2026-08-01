@@ -71,7 +71,7 @@ export class DashboardComponent {
   readonly attendance: AttendanceItem[] = [
     { label: 'Present', value: '221', color: '#639922' },
     { label: 'Absent', value: '18', color: '#e24b4a' },
-    { label: 'Leave', value: '9', color: '#ef9f27' },
+    { label: 'Late', value: '9', color: '#6366F1' },
     { label: 'Holiday', value: '0', color: '#d7ddcf' },
   ];
 

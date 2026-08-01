@@ -36,13 +36,11 @@ export interface SchoolPayload {
   state?: string | null;
   pincode?: string | null;
   country?: string | null;
-  timezone?: string | null;
   googleMapsLink?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   primaryPhone?: string | null;
   alternatePhone?: string | null;
-  fax?: string | null;
   primaryEmail?: string | null;
   principalEmail?: string | null;
   website?: string | null;

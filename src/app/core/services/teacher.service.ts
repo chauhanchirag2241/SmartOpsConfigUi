@@ -78,8 +78,6 @@ export class TeacherService {
         joiningDate: this.formatDate(teacher.professional.joiningDate),
         designation: teacher.professional.designation || null,
         experience: Number(teacher.professional.experience || 0),
-        salaryGrade: teacher.professional.salaryGrade,
-        employmentType: teacher.professional.employmentType,
         qualifications: (teacher.professional.qualifications || []).filter((q: any) => !!q),
         bankDetails: {
           accountNumber: teacher.professional.bankDetails?.accountNumber,
@@ -121,8 +119,6 @@ export class TeacherService {
       joiningDate: this.formatDate(teacher.professional.joiningDate),
       designation: teacher.professional.designation || null,
       experience: Number(teacher.professional.experience || 0),
-      salaryGrade: teacher.professional.salaryGrade,
-      employmentType: teacher.professional.employmentType,
       qualifications: (teacher.professional.qualifications || []).filter(Boolean).join('; '),
       bankAccountNumber: teacher.professional.bankDetails?.accountNumber,
       bankIfscCode: teacher.professional.bankDetails?.ifscCode,

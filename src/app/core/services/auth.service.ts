@@ -126,7 +126,7 @@ export class AuthService {
 
   private mapProfileToUser(profile: UserProfile): User {
     const roles = profile.roles ?? [];
-    const primaryRole = roles[0] ?? 'Admin';
+    const primaryRole = roles[0] ?? 'SmartOpsAdmin';
     return {
       id: profile.id,
       name: profile.username || profile.email,
@@ -139,7 +139,7 @@ export class AuthService {
 
   private mapRole(role?: string): UserRole {
     const normalized = role ?? '';
-    const known: UserRole[] = ['teacher', 'student', 'parent', 'admin', 'Admin', 'Accountant'];
+    const known: UserRole[] = ['teacher', 'student', 'parent', 'admin', 'Admin', 'Accountant', 'SmartOpsAdmin'];
     if (known.includes(normalized as UserRole)) {
       return normalized as UserRole;
     }
