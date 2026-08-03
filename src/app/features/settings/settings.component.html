@@ -100,6 +100,23 @@
         </div>
       </section>
 
+      <section class="card">
+        <h2>
+          <mat-icon>event_repeat</mat-icon>
+          Leave balances
+        </h2>
+        <p class="hint">
+          Unused leave accumulates month to month. At year end, carry forward up to this many days
+          per leave type (when the type allows carry forward).
+        </p>
+        <app-form-field
+          label="Yearly carry forward (days)"
+          type="number"
+          formControlName="yearlyCarryForwardDays"
+          [min]="0"
+        />
+      </section>
+
       @if (canEdit) {
         <footer class="actions">
           <button type="submit" class="btn-primary" [disabled]="saving || !schoolReady">

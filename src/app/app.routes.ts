@@ -45,6 +45,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
       },
+      {
+        path: 'configuration/jobs',
+        canActivate: [permissionGuard],
+        data: { menuCode: MenuCodes.JobMaster, permission: 'view' },
+        loadComponent: () =>
+          import('./features/jobs/job-master.component').then((m) => m.JobMasterComponent),
+      },
     ],
   },
   {

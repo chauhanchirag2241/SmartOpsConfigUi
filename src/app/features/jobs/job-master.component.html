@@ -1,0 +1,108 @@
+<section class="job-master-page">
+  <header class="page-header">
+    <div>
+      <h1>Job Master</h1>
+      <p>Configure scheduled background jobs and Hangfire</p>
+    </div>
+  </header>
+
+  <section class="card hangfire-card">
+    <div class="hangfire-row">
+      <div>
+        <h2>
+          <mat-icon>bolt</mat-icon>
+          Hangfire enabled
+        </h2>
+        <p class="hint">When off, scheduled jobs will not run even if individually enabled.</p>
+      </div>
+      <label class="toggle">
+        <input
+          type="checkbox"
+          [ngModel]="hangfireEnabled"
+          [disabled]="!canEdit || hangfireSaving || loading"
+          (ngModelChange)="onHangfireToggle($event)"
+        />
+        <span>{{ hangfireEnabled ? 'On' : 'Off' }}</span>
+      </label>
+    </div>
+
+    @if (!hangfireEnabled) {
+      <div class="alert alert-warn">
+        <mat-icon>warning</mat-icon>
+        Hangfire is disabled. Jobs will not run until it is turned back on.
+      </div>
+    }
+  </section>
+
+  <section class="card">
+    <h2>
+      <mat-icon>schedule</mat-icon>
+      Scheduled jobs
+    </h2>
+
+    @if (loading) {
+      <p class="loading">Loading jobs…</p>
+    } @else if (!jobs.length) {
+      <p class="hint">No job definitions found.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Code</th>
+              <th>Cron expression</th>
+              <th>Timezone</th>
+              <th>Enabled</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (job of jobs; track job.id) {
+              <tr>
+                <td>
+                  <div class="job-name">{{ job.name }}</div>
+                  @if (job.description) {
+                    <div class="job-desc">{{ job.description }}</div>
+                  }
+                </td>
+                <td><code>{{ job.code }}</code></td>
+                <td>
+                  <input
+                    class="form-control cron-input"
+                    [(ngModel)]="job.editingCron"
+                    [disabled]="!canEdit || job.saving"
+                    placeholder="0 0 1 * *"
+                  />
+                </td>
+                <td>{{ job.timeZoneId }}</td>
+                <td>
+                  <label class="checkbox-field">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="job.isEnabled"
+                      [disabled]="!canEdit || job.saving"
+                      (ngModelChange)="onJobEnabledChange(job)"
+                    />
+                  </label>
+                </td>
+                <td class="actions">
+                  @if (canEdit) {
+                    <button
+                      type="button"
+                      class="btn-save"
+                      [disabled]="job.saving || job.editingCron === job.cronExpression"
+                      (click)="saveJob(job)"
+                    >
+                      {{ job.saving ? 'Saving…' : 'Save' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</section>

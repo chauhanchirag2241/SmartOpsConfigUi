@@ -22,6 +22,24 @@ import { RoleDto, RoleService } from '../../../core/services/role.service';
 import { SchoolUserDto, UserService } from '../../../core/services/user.service';
 import { SchoolSelectorComponent } from '../../../shared/components/school-selector/school-selector.component';
 import { FormFieldComponent } from '../../../shared/form-controls/form-field';
+import {
+  GroupColState,
+  MenuPermField,
+  MenuPermissionDisplayRow,
+  MenuPermissionSummary,
+  MenuPermissionTreeNode,
+  applyPermChange,
+  buildMenuPermissionTree,
+  collectExpandableMenuIds,
+  computeMenuPermissionSummary,
+  findTreeNode,
+  flattenVisibleMenuRows,
+  groupColState,
+  isSubtreeFullyGranted,
+  rowPermissionCount,
+  setSubtreeAllPermissions,
+  setSubtreePermission,
+} from '../menu-permission-tree.util';
 
 interface RoleUserRow {
   id: string;
@@ -59,6 +77,22 @@ export class AddRoleComponent implements OnInit {
   roleUserRows: RoleUserRow[] = [];
   loadingUsers = false;
   menuPermissions: IRoleMenuPermission[] = [];
+  menuPermissionTree: MenuPermissionTreeNode[] = [];
+  menuPermissionRows: MenuPermissionDisplayRow[] = [];
+  expandedMenuIds = new Set<string>();
+  menuSearchQuery = '';
+  menuPermissionSummary: MenuPermissionSummary = {
+    totalMenus: 0,
+    menusWithAnyPermission: 0,
+    menusWithView: 0,
+  };
+  readonly permFields: MenuPermField[] = [
+    'canView',
+    'canAdd',
+    'canEdit',
+    'canDelete',
+    'canExport',
+  ];
   dashboardWidgetPermissions: IRoleDashboardWidgetPermission[] = [];
 
   get canEdit(): boolean {
@@ -111,6 +145,7 @@ export class AddRoleComponent implements OnInit {
     }).subscribe({
       next: ({ menus, widgets }) => {
         this.menuPermissions = menus.map((m) => ({ ...m }));
+        this.rebuildMenuPermissionTree();
         this.dashboardWidgetPermissions = widgets.map((w) => ({ ...w }));
         if (this.roleId && this.mode !== 'add') {
           this.loadRole(this.roleId);
@@ -140,15 +175,85 @@ export class AddRoleComponent implements OnInit {
     }
   }
 
-  setMenuPermission(
-    menu: IRoleMenuPermission,
-    field: 'canView' | 'canAdd' | 'canEdit' | 'canDelete' | 'canExport',
-    checked: boolean,
-  ): void {
+  setMenuPermission(menu: IRoleMenuPermission, field: MenuPermField, checked: boolean): void {
     if (!this.canEdit) {
       return;
     }
-    menu[field] = checked;
+    const node = findTreeNode(this.menuPermissionTree, menu.menuId);
+    if (node?.children.length) {
+      setSubtreePermission(node, field, checked);
+    } else {
+      applyPermChange(menu, field, checked);
+    }
+    this.refreshMenuPermissionUi();
+  }
+
+  onGroupColToggle(menuId: string, field: MenuPermField, checked: boolean): void {
+    if (!this.canEdit) return;
+    const node = findTreeNode(this.menuPermissionTree, menuId);
+    if (!node) return;
+    setSubtreePermission(node, field, checked);
+    this.refreshMenuPermissionUi();
+  }
+
+  rowGrantAll(menuId: string): void {
+    if (!this.canEdit) return;
+    const node = findTreeNode(this.menuPermissionTree, menuId);
+    if (!node) return;
+    if (node.children.length > 0) {
+      setSubtreeAllPermissions(node, !isSubtreeFullyGranted(node));
+    } else {
+      setSubtreeAllPermissions(node, rowPermissionCount(node.menu) !== 5);
+    }
+    this.refreshMenuPermissionUi();
+  }
+
+  isRowFullyGranted(row: MenuPermissionDisplayRow): boolean {
+    if (row.hasChildren) {
+      const node = findTreeNode(this.menuPermissionTree, row.menu.menuId);
+      return !!node && isSubtreeFullyGranted(node);
+    }
+    return rowPermissionCount(row.menu) === 5;
+  }
+
+  groupCheckboxState(menuId: string, field: MenuPermField): GroupColState | 'leaf' {
+    const node = findTreeNode(this.menuPermissionTree, menuId);
+    if (!node || node.children.length === 0) return 'leaf';
+    return groupColState(node, field);
+  }
+
+  onMenuSearch(query: string): void {
+    this.menuSearchQuery = query;
+    this.rebuildMenuPermissionRows();
+  }
+
+  toggleMenuExpand(menuId: string): void {
+    if (this.expandedMenuIds.has(menuId)) {
+      this.expandedMenuIds.delete(menuId);
+    } else {
+      this.expandedMenuIds.add(menuId);
+    }
+    this.rebuildMenuPermissionRows();
+  }
+
+  isMenuExpanded(menuId: string): boolean {
+    return this.expandedMenuIds.has(menuId);
+  }
+
+  expandAllMenuGroups(): void {
+    collectExpandableMenuIds(this.menuPermissionTree).forEach((id) =>
+      this.expandedMenuIds.add(id),
+    );
+    this.rebuildMenuPermissionRows();
+  }
+
+  collapseAllMenuGroups(): void {
+    this.expandedMenuIds.clear();
+    this.rebuildMenuPermissionRows();
+  }
+
+  depthPads(depth: number): number[] {
+    return depth > 0 ? Array.from({ length: depth }, (_, i) => i) : [];
   }
 
   selectAllPermissions(checked: boolean): void {
@@ -160,6 +265,7 @@ export class AddRoleComponent implements OnInit {
       m.canDelete = checked;
       m.canExport = checked;
     });
+    this.refreshMenuPermissionUi();
   }
 
   setWidgetPermission(widget: IRoleDashboardWidgetPermission, checked: boolean): void {
@@ -267,7 +373,7 @@ export class AddRoleComponent implements OnInit {
   }
 
   trackMenu(index: number, menu: IRoleMenuPermission): string {
-    return `${menu.menuCode}-${index}`;
+    return menu.menuId || `${menu.menuCode}-${index}`;
   }
 
   showError(controlName: string): boolean {
@@ -355,6 +461,31 @@ export class AddRoleComponent implements OnInit {
         canView: !!existing.canView,
       };
     });
+    this.rebuildMenuPermissionTree();
+  }
+
+  private rebuildMenuPermissionTree(): void {
+    this.menuPermissionTree = buildMenuPermissionTree(this.menuPermissions);
+    if (this.expandedMenuIds.size === 0) {
+      for (const id of collectExpandableMenuIds(this.menuPermissionTree)) {
+        this.expandedMenuIds.add(id);
+      }
+    }
+    this.refreshMenuPermissionUi();
+  }
+
+  private rebuildMenuPermissionRows(): void {
+    this.menuPermissionRows = flattenVisibleMenuRows(
+      this.menuPermissionTree,
+      this.expandedMenuIds,
+      this.menuSearchQuery,
+    );
+    this.cdr.markForCheck();
+  }
+
+  private refreshMenuPermissionUi(): void {
+    this.menuPermissionSummary = computeMenuPermissionSummary(this.menuPermissions);
+    this.rebuildMenuPermissionRows();
   }
 
   private saveRoleUsersAndFinish(): void {

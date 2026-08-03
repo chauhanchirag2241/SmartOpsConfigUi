@@ -20,6 +20,7 @@ const LEAVE_KEYS = {
   studentLongLeaveMinDays: 'leave.student.longLeaveMinDays',
   studentLongLeaveApproverUserTypes: 'leave.student.longLeaveApproverUserTypes',
   studentLongLeaveTransferToPrincipal: 'leave.student.longLeaveTransferToPrincipal',
+  yearlyCarryForwardDays: 'leave.yearlyCarryForwardDays',
 } as const;
 
 @Component({
@@ -70,6 +71,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       studentApprovalMode: ['AnyOne', Validators.required],
       studentLongLeaveMinDays: [4, [Validators.required, Validators.min(1)]],
       studentLongLeaveTransferToPrincipal: [true],
+      yearlyCarryForwardDays: [15, [Validators.required, Validators.min(0)]],
     });
 
     if (!this.canEdit) {
@@ -151,6 +153,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         key: LEAVE_KEYS.studentLongLeaveTransferToPrincipal,
         value: raw.studentLongLeaveTransferToPrincipal ? 'true' : 'false',
       },
+      { key: LEAVE_KEYS.yearlyCarryForwardDays, value: String(raw.yearlyCarryForwardDays) },
       { key: 'leave.student.defaultApprover', value: 'CLASS_TEACHER' },
     ];
 
@@ -204,6 +207,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
             studentLongLeaveMinDays: Number(map.get(LEAVE_KEYS.studentLongLeaveMinDays) ?? 4),
             studentLongLeaveTransferToPrincipal:
               (map.get(LEAVE_KEYS.studentLongLeaveTransferToPrincipal) ?? 'true') === 'true',
+            yearlyCarryForwardDays: Number(map.get(LEAVE_KEYS.yearlyCarryForwardDays) ?? 15),
           });
           this.selectedStaffTypes = new Set(
             (map.get(LEAVE_KEYS.staffApproverUserTypes) ?? 'SCHOOL_ADMIN')
@@ -234,6 +238,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       studentApprovalMode: 'AnyOne',
       studentLongLeaveMinDays: 4,
       studentLongLeaveTransferToPrincipal: true,
+      yearlyCarryForwardDays: 15,
     });
     this.selectedStaffTypes = new Set(['SCHOOL_ADMIN']);
     this.selectedLongLeaveTypes = new Set(['PRINCIPAL']);

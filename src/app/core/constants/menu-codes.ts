@@ -4,6 +4,7 @@ export const MenuCodes = {
   Users: 'USERS',
   Roles: 'ROLES',
   Settings: 'SETTINGS',
+  JobMaster: 'JOB_MASTER',
   Academics: 'ACADEMICS',
   Students: 'STUDENTS',
   Teachers: 'TEACHERS',
