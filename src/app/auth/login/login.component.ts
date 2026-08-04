@@ -95,8 +95,10 @@ export class LoginComponent implements OnInit {
         this.loading = false;
       }))
       .subscribe({
-        next: () => {
-          void this.router.navigate(['/dashboard']);
+        next: ({ mustChangePassword }) => {
+          void this.router.navigate(
+            mustChangePassword ? ['/auth/change-password'] : ['/dashboard'],
+          );
         },
         error: (err) => {
           this.errorMessage = this.resolveLoginError(err);

@@ -40,7 +40,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
 
   private schoolSub?: Subscription;
-  private selectedStaffTypes = new Set<string>();
   private selectedLongLeaveTypes = new Set<string>();
 
   form!: FormGroup;
@@ -93,22 +92,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.schoolSub?.unsubscribe();
   }
 
-  isStaffTypeSelected(code: string): boolean {
-    return this.selectedStaffTypes.has(code);
-  }
-
   isLongLeaveTypeSelected(code: string): boolean {
     return this.selectedLongLeaveTypes.has(code);
-  }
-
-  toggleStaffType(code: string): void {
-    if (!this.canEdit) return;
-    if (this.selectedStaffTypes.has(code)) {
-      this.selectedStaffTypes.delete(code);
-    } else {
-      this.selectedStaffTypes.add(code);
-    }
-    this.cdr.markForCheck();
   }
 
   toggleLongLeaveType(code: string): void {
@@ -128,21 +113,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.selectedStaffTypes.size === 0) {
-      this.snackBar.open('Select at least one staff approver user type', 'Close', {
-        duration: 3000,
-        panelClass: 'snack-error',
-      });
-      return;
-    }
-
     const raw = this.form.getRawValue();
     const settings = [
       { key: LEAVE_KEYS.staffApprovalMode, value: String(raw.staffApprovalMode) },
-      {
-        key: LEAVE_KEYS.staffApproverUserTypes,
-        value: [...this.selectedStaffTypes].join(','),
-      },
+      // Staff routing is fixed: Reporting Manager → Principal (kept for backward-compatible settings key).
+      { key: LEAVE_KEYS.staffApproverUserTypes, value: 'Principal' },
       { key: LEAVE_KEYS.studentApprovalMode, value: String(raw.studentApprovalMode) },
       { key: LEAVE_KEYS.studentLongLeaveMinDays, value: String(raw.studentLongLeaveMinDays) },
       {
@@ -209,14 +184,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
               (map.get(LEAVE_KEYS.studentLongLeaveTransferToPrincipal) ?? 'true') === 'true',
             yearlyCarryForwardDays: Number(map.get(LEAVE_KEYS.yearlyCarryForwardDays) ?? 15),
           });
-          this.selectedStaffTypes = new Set(
-            (map.get(LEAVE_KEYS.staffApproverUserTypes) ?? 'SCHOOL_ADMIN')
-              .split(',')
-              .map((s) => s.trim())
-              .filter(Boolean),
-          );
           this.selectedLongLeaveTypes = new Set(
-            (map.get(LEAVE_KEYS.studentLongLeaveApproverUserTypes) ?? 'PRINCIPAL')
+            (map.get(LEAVE_KEYS.studentLongLeaveApproverUserTypes) ?? 'Principal')
               .split(',')
               .map((s) => s.trim())
               .filter(Boolean),
@@ -240,7 +209,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
       studentLongLeaveTransferToPrincipal: true,
       yearlyCarryForwardDays: 15,
     });
-    this.selectedStaffTypes = new Set(['SCHOOL_ADMIN']);
-    this.selectedLongLeaveTypes = new Set(['PRINCIPAL']);
+    this.selectedLongLeaveTypes = new Set(['Principal']);
   }
 }

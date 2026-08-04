@@ -37,22 +37,10 @@
           [options]="approvalModeOptions"
         />
 
-        <div class="chips-block">
-          <span class="label">Approver user types</span>
-          <div class="chips">
-            @for (type of userTypes; track type.id) {
-              <button
-                type="button"
-                class="chip"
-                [class.selected]="isStaffTypeSelected(type.code)"
-                [disabled]="!canEdit"
-                (click)="toggleStaffType(type.code)"
-              >
-                {{ type.name }}
-              </button>
-            }
-          </div>
-        </div>
+        <p class="hint">
+          Staff leave is routed to the employee’s <strong>Reporting Manager</strong>.
+          If none is set, it goes to users with UserType <strong>Principal</strong>.
+        </p>
       </section>
 
       <section class="card">

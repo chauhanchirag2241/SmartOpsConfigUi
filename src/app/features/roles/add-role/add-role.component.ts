@@ -466,11 +466,7 @@ export class AddRoleComponent implements OnInit {
 
   private rebuildMenuPermissionTree(): void {
     this.menuPermissionTree = buildMenuPermissionTree(this.menuPermissions);
-    if (this.expandedMenuIds.size === 0) {
-      for (const id of collectExpandableMenuIds(this.menuPermissionTree)) {
-        this.expandedMenuIds.add(id);
-      }
-    }
+    // Default collapsed — user can Expand all when needed.
     this.refreshMenuPermissionUi();
   }
 

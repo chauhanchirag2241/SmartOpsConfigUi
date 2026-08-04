@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import type { IRoleDashboardWidgetPermission, IRoleMenuPermission } from '../models/permission.model';
@@ -41,7 +42,7 @@ export class RoleService {
   }
 
   getMenuTemplates(): Observable<IRoleMenuPermission[]> {
-    return this.api.get<IRoleMenuPermission[]>('menus/all');
+    return this.api.get<IRoleMenuPermission[]>('menus/all', new HttpParams().set('app', 'CONFIG'));
   }
 
   updateRolePermissions(roleId: string, permissions: IRoleMenuPermission[]): Observable<void> {

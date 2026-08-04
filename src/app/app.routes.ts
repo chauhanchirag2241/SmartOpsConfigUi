@@ -63,6 +63,13 @@ export const routes: Routes = [
         path: 'login',
         loadComponent: () => import('./auth/login/login.component').then((m) => m.LoginComponent),
       },
+      {
+        path: 'change-password',
+        loadComponent: () =>
+          import('./auth/change-password/change-password.component').then(
+            (m) => m.ChangePasswordComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'auth/login' },
